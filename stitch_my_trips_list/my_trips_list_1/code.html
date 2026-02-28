@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Neutral My Trips List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "neutral-charcoal": "#1A1A1A",
+                        "neutral-gray": "#71717A",
+                        "soft-gray": "#F4F4F5",
+                        "border-gray": "#E4E4E7",
+                        "accent-blue-start": "#E0F2FE",
+                        "accent-blue-end": "#BAE6FD",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "ios": "1rem",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-white font-display text-neutral-charcoal antialiased;
+                min-height: 100dvh;
+            }
+        }
+        .gradient-accent {
+            background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col">
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-6 py-6">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-neutral-charcoal">My Trips</h1>
+<p class="text-[11px] font-semibold text-neutral-gray mt-0.5 uppercase tracking-[0.05em]">3 upcoming journeys</p>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-soft-gray hover:bg-gray-200 transition-colors">
+<span class="material-symbols-outlined text-[22px] text-neutral-charcoal">search</span>
+</button>
+</div>
+</header>
+<main class="flex-1 max-w-md mx-auto w-full pb-32">
+<div class="px-6 py-4">
+<div class="flex bg-soft-gray p-1 rounded-xl">
+<button class="flex-1 py-2 text-sm font-bold rounded-lg gradient-accent text-sky-900 shadow-sm transition-all">
+                Upcoming
+            </button>
+<button class="flex-1 py-2 text-sm font-semibold rounded-lg text-neutral-gray hover:text-neutral-charcoal transition-colors">
+                Past
+            </button>
+</div>
+</div>
+<div class="px-6 space-y-3 mt-2">
+<div class="group relative p-5 rounded-ios bg-white border border-border-gray/60 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all active:scale-[0.98] active:bg-soft-gray/50">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold text-neutral-charcoal leading-tight">Summer in Santorini</h3>
+<span class="bg-sky-50 text-sky-700 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
+                    7 Days left
+                </span>
+</div>
+<div class="flex items-center gap-1.5 text-neutral-gray mb-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<p class="text-sm font-medium">Santorini, Greece</p>
+</div>
+<p class="text-xs font-medium text-neutral-gray/70 ml-[22px]">July 15 - July 22, 2024</p>
+</div>
+<div class="group relative p-5 rounded-ios bg-white border border-border-gray/60 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all active:scale-[0.98] active:bg-soft-gray/50">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold text-neutral-charcoal leading-tight">Tokyo Adventure</h3>
+<span class="text-neutral-gray/40 material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-1.5 text-neutral-gray mb-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<p class="text-sm font-medium">Tokyo, Japan</p>
+</div>
+<p class="text-xs font-medium text-neutral-gray/70 ml-[22px]">Sept 10 - Sept 20, 2024</p>
+</div>
+<div class="group relative p-5 rounded-ios bg-white border border-border-gray/60 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all active:scale-[0.98] active:bg-soft-gray/50">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold text-neutral-charcoal leading-tight">Alpine Retreat</h3>
+<span class="text-neutral-gray/40 material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-1.5 text-neutral-gray mb-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<p class="text-sm font-medium">Zermatt, Switzerland</p>
+</div>
+<p class="text-xs font-medium text-neutral-gray/70 ml-[22px]">Dec 05 - Dec 12, 2024</p>
+</div>
+<div class="group relative p-5 rounded-ios bg-soft-gray/30 border border-border-gray/40 shadow-none transition-all active:scale-[0.98]">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-lg font-bold text-neutral-charcoal leading-tight">Weekend in Paris</h3>
+<span class="text-neutral-gray/40 material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-1.5 text-neutral-gray mb-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<p class="text-sm font-medium">Paris, France</p>
+</div>
+<p class="text-xs font-medium text-neutral-gray/70 ml-[22px]">Feb 14 - Feb 16, 2025</p>
+</div>
+</div>
+</main>
+<button class="fixed bottom-28 right-6 size-14 gradient-accent text-sky-900 rounded-full shadow-lg shadow-sky-200/50 flex items-center justify-center active:scale-90 transition-all z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-100 pb-8 pt-3 px-8 z-50">
+<div class="max-w-md mx-auto flex items-center justify-between">
+<a class="flex flex-col items-center gap-1 text-neutral-charcoal" href="#">
+<span class="material-symbols-outlined fill-1">luggage</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Trips</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray/60" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Explore</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray/60" href="#">
+<span class="material-symbols-outlined">favorite</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Saved</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray/60" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+</a>
+</div>
+</nav>
+
+</body></html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add / Edit Activity</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "neutral-charcoal": "#333333",
+                        "neutral-gray": "#666666",
+                        "soft-gray": "#F5F5F7",
+                        "accent-blue-start": "#E0F2FE",
+                        "accent-blue-end": "#BAE6FD",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {
+                        "ios": "1.25rem",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-white font-display text-neutral-charcoal;
+                min-height: 100dvh;
+            }
+        }
+        .gradient-accent {
+            background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+        }
+        input, select, textarea {
+            @apply w-full bg-soft-gray border-none rounded-xl py-4 px-4 text-neutral-charcoal placeholder:text-neutral-gray/50 focus:ring-2 focus:ring-accent-blue-end/50 transition-all text-sm;
+        }
+        label {
+            @apply block text-[11px] font-bold uppercase tracking-wider text-neutral-gray mb-2 ml-1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col">
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-6 py-5">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-soft-gray hover:bg-gray-200 transition-colors">
+<span class="material-symbols-outlined text-neutral-charcoal text-xl">close</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-neutral-charcoal">Add Activity</h1>
+</div>
+<button class="text-sm font-bold text-sky-600 hover:text-sky-700">Drafts</button>
+</div>
+</header>
+<main class="flex-1 max-w-md mx-auto w-full pb-32">
+<form class="px-6 py-4 space-y-6">
+<div class="space-y-1">
+<label for="activity-name">Activity Name</label>
+<input class="font-medium" id="activity-name" placeholder="e.g. Morning Surfing Lesson" type="text"/>
+</div>
+<div class="space-y-1">
+<label for="activity-time">Time</label>
+<div class="relative">
+<input class="appearance-none font-medium" id="activity-time" type="time"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-neutral-gray pointer-events-none">schedule</span>
+</div>
+</div>
+<div class="space-y-1">
+<label for="location">Location</label>
+<div class="relative">
+<input class="pr-12" id="location" placeholder="Search for a place..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-neutral-gray hover:text-neutral-charcoal" type="button">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label for="category">Category</label>
+<select class="appearance-none" id="category">
+<option value="sightseeing">Sightseeing</option>
+<option value="food">Food &amp; Drink</option>
+<option value="activity">Active</option>
+<option value="transport">Transport</option>
+<option value="other">Other</option>
+</select>
+</div>
+<div class="space-y-1">
+<label for="cost">Cost</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-gray font-medium">$</span>
+<input class="pl-8" id="cost" placeholder="0.00" type="number"/>
+</div>
+</div>
+</div>
+<div class="space-y-1">
+<label for="notes">Notes</label>
+<textarea id="notes" placeholder="Add details, booking codes, or reminders..." rows="4"></textarea>
+</div>
+</form>
+</main>
+<div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent z-40">
+<div class="max-w-md mx-auto">
+<button class="w-full py-4 gradient-accent text-sky-900 font-bold rounded-2xl shadow-lg shadow-sky-200/50 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">check_circle</span>
+                Save Activity
+            </button>
+</div>
+</div>
+<nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 pb-8 pt-3 px-8 z-50 pointer-events-none opacity-0">
+<div class="max-w-md mx-auto flex items-center justify-between">
+<a class="flex flex-col items-center gap-1 text-neutral-charcoal" href="#">
+<span class="material-symbols-outlined fill-1">luggage</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Trips</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray opacity-60" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Explore</span>
+</a>
+</div>
+</nav>
+
+</body></html>

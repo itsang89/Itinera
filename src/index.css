@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white font-display text-neutral-charcoal antialiased;
+    min-height: 100dvh;
+  }
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+}

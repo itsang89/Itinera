@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add / Edit Expense</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "neutral-charcoal": "#333333",
+                        "neutral-gray": "#666666",
+                        "soft-gray": "#F5F5F7",
+                        "accent-blue-start": "#E0F2FE",
+                        "accent-blue-end": "#BAE6FD",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {
+                        "ios": "1.25rem",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-white font-display text-neutral-charcoal;
+                min-height: 100dvh;
+            }
+        }
+        .gradient-accent {
+            background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+        }
+        input:focus, select:focus {
+            @apply outline-none ring-0 border-sky-300 !important;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col">
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-6 py-5">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-soft-gray active:scale-95 transition-all">
+<span class="material-symbols-outlined text-neutral-charcoal text-[22px]">arrow_back_ios_new</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-neutral-charcoal">Add Expense</h1>
+<div class="w-10"></div> 
+</div>
+</header>
+<main class="flex-1 max-w-md mx-auto w-full px-6 py-4 pb-32">
+<div class="space-y-8 mt-4">
+<div class="text-center">
+<label class="text-[11px] font-bold uppercase tracking-wider text-neutral-gray block mb-2">Total Amount</label>
+<div class="flex items-center justify-center gap-1">
+<span class="text-3xl font-semibold text-neutral-charcoal">$</span>
+<input autofocus="" class="w-full max-w-[200px] text-5xl font-bold border-none text-center bg-transparent p-0 focus:ring-0 placeholder:text-gray-200" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-[13px] font-semibold text-neutral-charcoal ml-1">Expense Title</label>
+<input class="w-full bg-soft-gray border-none rounded-xl px-4 py-4 text-[15px] placeholder:text-gray-400" placeholder="e.g. Dinner at Santorini Grill" type="text"/>
+</div>
+<div class="space-y-2 relative">
+<label class="text-[13px] font-semibold text-neutral-charcoal ml-1">Category</label>
+<div class="relative">
+<select class="w-full bg-soft-gray border-none rounded-xl px-4 py-4 text-[15px] appearance-none pr-10 text-neutral-charcoal">
+<option disabled="" selected="" value="">Select category</option>
+<option value="food">Food &amp; Drinks</option>
+<option value="transport">Transportation</option>
+<option value="stay">Accommodation</option>
+<option value="activities">Activities</option>
+<option value="shopping">Shopping</option>
+<option value="other">Other</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-neutral-gray pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[13px] font-semibold text-neutral-charcoal ml-1">Date</label>
+<div class="relative">
+<input class="w-full bg-soft-gray border-none rounded-xl px-4 py-4 text-[15px] text-neutral-charcoal" type="date" value="2024-07-15"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-neutral-gray pointer-events-none">calendar_today</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[13px] font-semibold text-neutral-charcoal ml-1">Note (Optional)</label>
+<textarea class="w-full bg-soft-gray border-none rounded-xl px-4 py-4 text-[15px] resize-none placeholder:text-gray-400" placeholder="Add any extra details..." rows="3"></textarea>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 p-6 pb-10 z-50">
+<div class="max-w-md mx-auto">
+<button class="w-full py-4 gradient-accent rounded-ios text-sky-900 font-bold text-lg shadow-sm active:scale-[0.98] transition-all">
+                Add Expense
+            </button>
+</div>
+</div>
+
+</body></html>

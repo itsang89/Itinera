@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "neutral-bg": "#F8FAFB",
+                        "accent-blue-start": "#E0F2FE",
+                        "accent-blue-end": "#DBEAFE",
+                        "dark-gray": "#1F2937",
+                        "medium-gray": "#4B5563",
+                        "soft-gray": "#9CA3AF",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "1rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<title>Neutral Trip Overview Dashboard</title>
+<style type="text/tailwindcss">
+        :root {
+            --light-blue-gradient: linear-gradient(135deg, #E0F2FE 0%, #DBEAFE 100%);
+        }
+        body {
+            min-height: 100dvh;
+            background-color: #F8FAFB;
+        }
+        .bg-accent-gradient {
+            background: var(--light-blue-gradient);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display text-dark-gray antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<div class="flex items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 justify-between border-b border-gray-100">
+<div class="text-dark-gray flex size-10 items-center justify-start rounded-full active:bg-gray-100 transition-colors cursor-pointer">
+<span class="material-symbols-outlined !text-2xl">arrow_back_ios_new</span>
+</div>
+<h2 class="text-dark-gray text-base font-semibold leading-tight tracking-tight flex-1 text-center">Trip Overview</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full size-10 active:bg-gray-100 transition-colors text-dark-gray">
+<span class="material-symbols-outlined !text-2xl">share</span>
+</button>
+</div>
+</div>
+<div class="relative w-full h-80 px-4 pt-4">
+<div class="relative w-full h-full rounded-2xl overflow-hidden shadow-sm">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBdvuSVPelza0exgZa5DwsAPoKeSNdXgrK4FROkKt3_9GmHt-cVMaZL_b3fDluf_jFXX8HR2fY-i_7-h7kTqeHxZlQL_LtJSRKeB3StAuHhVHwe5xfLwkcKP4cTAOZmBUpPKeW59TkFS_EFa_z4JKdQBIdcYylmKuW8IhD_WQQtORb0UKm_9mzjiHRTTJCFXA0GkkmO3mqIc9nBGnA_xQZRSx-LjscLFFU1IPemgnleP-l96W52p8qAoXE8_xjMxi_5rNVkN8lIXRg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<div class="flex flex-col gap-1">
+<span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white w-fit mb-2 border border-white/30">Summer Vacation</span>
+<h1 class="text-3xl font-bold text-white tracking-tight">Paris, France</h1>
+<div class="flex items-center gap-2 text-white/90 text-sm">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<p class="font-medium">July 15 - July 22, 2024</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 mt-6 flex flex-col gap-6">
+<div class="flex items-center justify-between gap-4 rounded-2xl bg-accent-gradient p-6 shadow-sm border border-blue-100/50">
+<div class="flex flex-col">
+<p class="text-medium-gray text-[10px] font-bold uppercase tracking-wider mb-1">Upcoming Departure</p>
+<p class="text-dark-gray text-2xl font-bold tracking-tight">12 Days Left</p>
+</div>
+<div class="flex items-center justify-center bg-white/60 rounded-xl p-3 shadow-sm">
+<span class="material-symbols-outlined text-dark-gray text-3xl">flight_takeoff</span>
+</div>
+</div>
+<div class="p-6 rounded-2xl bg-white border border-gray-100 flex items-center justify-between shadow-sm">
+<div class="flex flex-col gap-1">
+<p class="text-soft-gray text-[10px] font-bold uppercase tracking-wider">Local Weather</p>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-bold text-dark-gray">24°C</p>
+<p class="text-medium-gray text-sm font-medium">Mostly Sunny</p>
+</div>
+<p class="text-medium-gray text-xs font-medium">Feels like 26°C</p>
+</div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-5xl text-yellow-500" style="font-variation-settings: 'FILL' 1">wb_sunny</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<a class="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm" href="#">
+<div class="flex size-11 items-center justify-center rounded-xl bg-accent-gradient text-dark-gray shadow-sm">
+<span class="material-symbols-outlined">event_note</span>
+</div>
+<div>
+<p class="font-bold text-sm text-dark-gray">Itinerary</p>
+<p class="text-xs text-soft-gray mt-0.5">8 activities planned</p>
+</div>
+</a>
+<a class="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm" href="#">
+<div class="flex size-11 items-center justify-center rounded-xl bg-gray-50 text-dark-gray border border-gray-100">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<p class="font-bold text-sm text-dark-gray">Budget</p>
+<p class="text-xs text-soft-gray mt-0.5">€1,250 remaining</p>
+</div>
+</a>
+<a class="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm" href="#">
+<div class="flex size-11 items-center justify-center rounded-xl bg-gray-50 text-dark-gray border border-gray-100">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="font-bold text-sm text-dark-gray">Documents</p>
+<p class="text-xs text-soft-gray mt-0.5">Tickets &amp; Bookings</p>
+</div>
+</a>
+<a class="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm" href="#">
+<div class="flex size-11 items-center justify-center rounded-xl bg-gray-50 text-dark-gray border border-gray-100">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div>
+<p class="font-bold text-sm text-dark-gray">Packing List</p>
+<p class="text-xs text-soft-gray mt-0.5">12 / 34 items</p>
+</div>
+</a>
+</div>
+<div class="mb-4">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-dark-gray font-bold text-lg px-1">Upcoming Activity</h3>
+<button class="text-xs font-bold text-medium-gray uppercase tracking-widest">View All</button>
+</div>
+<div class="relative overflow-hidden rounded-2xl bg-white border border-gray-100 p-4 flex gap-4 shadow-sm active:bg-gray-50 transition-colors">
+<div class="size-20 rounded-xl bg-cover bg-center shrink-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCf4Z7C91Hu5I9Qqw7x_PWnzR9XR4XRcOUIvpdgvMPgB4OUVg8T4u3HkJPWUMhVXPDJWgsjOasjtGjrMImv7HZrPAxk3ZNo97X3FXMEIDgkYx74uM_kkeXPBueY721o9Ics0x5btxl7rKe3EnWOw3l3d5gAyPeMsVRQE3crrFTdTJOhaAkQqK1Qwq6xnbEzfjmTWv0cqvuHn_pYpZ_8fZHBvyEnf0jsmoobmJMNx4fQ-z00Xn5NGBxvXqJLnaPlwl0z0gpIMPUKg6Q')"></div>
+<div class="flex flex-col justify-center">
+<p class="font-bold text-dark-gray">Louvre Museum Tour</p>
+<p class="text-xs text-medium-gray font-medium">July 16, 10:00 AM</p>
+<div class="mt-2 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-dark-gray">location_on</span>
+<span class="text-[11px] text-dark-gray font-bold uppercase tracking-tight">Priority Entry</span>
+</div>
+</div>
+<div class="ml-auto flex items-center">
+<span class="material-symbols-outlined text-soft-gray">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-[60] flex h-20 items-center justify-around border-t border-gray-100 bg-white/95 backdrop-blur-xl px-6 pb-4">
+<a class="flex flex-col items-center justify-center gap-1.5 text-dark-gray" href="#">
+<span class="material-symbols-outlined !text-2xl" style="font-variation-settings: 'FILL' 1">map</span>
+<p class="text-[10px] font-bold tracking-tight">Trips</p>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-soft-gray" href="#">
+<span class="material-symbols-outlined !text-2xl">explore</span>
+<p class="text-[10px] font-semibold tracking-tight">Explore</p>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-soft-gray" href="#">
+<span class="material-symbols-outlined !text-2xl">favorite</span>
+<p class="text-[10px] font-semibold tracking-tight">Saved</p>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-soft-gray" href="#">
+<span class="material-symbols-outlined !text-2xl">account_circle</span>
+<p class="text-[10px] font-semibold tracking-tight">Profile</p>
+</a>
+</div>
+</div>
+
+</body></html>

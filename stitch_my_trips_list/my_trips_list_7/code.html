@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trip Packing Checklist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "neutral-charcoal": "#333333",
+                        "neutral-gray": "#666666",
+                        "soft-gray": "#F5F5F7",
+                        "accent-blue-start": "#E0F2FE",
+                        "accent-blue-end": "#BAE6FD",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {
+                        "ios": "1.25rem",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-white font-display text-neutral-charcoal;
+                min-height: 100dvh;
+            }
+        }
+        .gradient-accent {
+            background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+        }
+        .custom-checkbox:checked + .checkbox-visual {
+            background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+            border-color: transparent;
+        }
+        .custom-checkbox:checked + .checkbox-visual::after {
+            content: 'check';
+            font-family: 'Material Symbols Outlined';
+            font-size: 16px;
+            color: #0369a1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col">
+<header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl px-6 py-5">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-soft-gray">
+<span class="material-symbols-outlined text-xl text-neutral-charcoal">arrow_back_ios_new</span>
+</button>
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-neutral-charcoal">Packing List</h1>
+<p class="text-xs font-medium text-neutral-gray mt-0.5 uppercase tracking-wider">Summer in Santorini</p>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-soft-gray">
+<span class="material-symbols-outlined text-neutral-charcoal">more_horiz</span>
+</button>
+</div>
+</header>
+<main class="flex-1 max-w-md mx-auto w-full pb-32">
+<div class="px-6 py-6">
+<div class="bg-soft-gray rounded-ios p-5">
+<div class="flex justify-between items-end mb-3">
+<span class="text-sm font-semibold text-neutral-charcoal">Total Progress</span>
+<span class="text-sm font-bold text-sky-700">12/24 Items</span>
+</div>
+<div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+<div class="h-full gradient-accent w-1/2 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="px-6 space-y-8">
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold text-neutral-charcoal">Clothes</h2>
+<span class="text-xs font-bold text-neutral-gray bg-soft-gray px-2.5 py-1 rounded-md">4/8</span>
+</div>
+<div class="space-y-3">
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Cotton T-shirts (x5)</span>
+<div class="relative flex items-center">
+<input checked="" class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Linen Shorts</span>
+<div class="relative flex items-center">
+<input checked="" class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Swimwear</span>
+<div class="relative flex items-center">
+<input class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold text-neutral-charcoal">Electronics</h2>
+<span class="text-xs font-bold text-neutral-gray bg-soft-gray px-2.5 py-1 rounded-md">2/4</span>
+</div>
+<div class="space-y-3">
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Universal Power Adapter</span>
+<div class="relative flex items-center">
+<input checked="" class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Noise Cancelling Headphones</span>
+<div class="relative flex items-center">
+<input class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold text-neutral-charcoal">Toiletries</h2>
+<span class="text-xs font-bold text-neutral-gray bg-soft-gray px-2.5 py-1 rounded-md">0/6</span>
+</div>
+<div class="space-y-3">
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Sunscreen (SPF 50)</span>
+<div class="relative flex items-center">
+<input class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+<label class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer active:scale-[0.99] transition-all">
+<span class="text-[15px] font-medium text-neutral-charcoal">Toiletry Bag</span>
+<div class="relative flex items-center">
+<input class="custom-checkbox absolute opacity-0 w-6 h-6 cursor-pointer" type="checkbox"/>
+<div class="checkbox-visual w-6 h-6 border-2 border-gray-200 rounded-lg transition-all flex items-center justify-center"></div>
+</div>
+</label>
+</div>
+</section>
+</div>
+</main>
+<button class="fixed bottom-28 right-6 size-14 gradient-accent text-sky-900 rounded-full shadow-lg shadow-sky-200/50 flex items-center justify-center active:scale-90 transition-all z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<nav class="fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 pb-8 pt-3 px-8 z-50">
+<div class="max-w-md mx-auto flex items-center justify-between">
+<a class="flex flex-col items-center gap-1 text-neutral-charcoal" href="#">
+<span class="material-symbols-outlined fill-1">luggage</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Trips</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray opacity-60" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Explore</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray opacity-60" href="#">
+<span class="material-symbols-outlined">favorite</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Saved</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-gray opacity-60" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+</a>
+</div>
+</nav>
+
+</body></html>
