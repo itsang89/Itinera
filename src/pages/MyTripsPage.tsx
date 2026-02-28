@@ -7,7 +7,7 @@ import { TripCardSkeleton } from '@/components/LoadingSkeleton'
 
 export default function MyTripsPage() {
   const { user } = useAuth()
-  const { trips, loading, deleteTrip } = useTrips(user?.uid)
+  const { trips, loading, error, deleteTrip } = useTrips(user?.uid)
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -34,6 +34,21 @@ export default function MyTripsPage() {
         <TripCardSkeleton />
         <TripCardSkeleton />
         <TripCardSkeleton />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="px-6 py-6">
+        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm">
+          <p className="font-medium mb-1">Could not load trips</p>
+          <p className="text-red-500 dark:text-red-400/90">{error.message}</p>
+          <p className="mt-2 text-xs">
+            Try refreshing the page. If the problem persists, ensure Firestore indexes are deployed (run{' '}
+            <code className="bg-red-100 dark:bg-red-900/50 px-1 rounded">firebase deploy --only firestore:indexes</code>).
+          </p>
+        </div>
       </div>
     )
   }

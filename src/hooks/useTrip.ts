@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   doc,
+  getDocFromServer,
   onSnapshot,
   updateDoc,
   collection,
@@ -27,11 +28,31 @@ export function useTrip(tripId: string | undefined) {
     if (!tripId) {
       setTrip(null)
       setLoading(false)
+      setError(null)
       return
     }
 
+    setError(null)
+    const tripRef = doc(db, 'trips', tripId)
+
+    // Initial load: fetch from server to ensure fresh data (e.g. new browser, different device)
+    getDocFromServer(tripRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          setTrip({ id: snapshot.id, ...snapshot.data() } as Trip)
+        } else {
+          setTrip(null)
+        }
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err as Error)
+        setLoading(false)
+      })
+
+    // Real-time updates: keep listener for live sync
     const unsubscribe: Unsubscribe = onSnapshot(
-      doc(db, 'trips', tripId),
+      tripRef,
       (snapshot) => {
         if (snapshot.exists()) {
           setTrip({ id: snapshot.id, ...snapshot.data() } as Trip)

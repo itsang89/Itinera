@@ -56,6 +56,12 @@ An all-in-one trip planner where you can organize trips day-by-day, track budget
    npm run dev
    ```
 
+## Data sync across browsers
+
+- **Auth is per-browser**: When you open the app in a different browser or device, you need to log in again. Firebase Auth does not sync sessions across browsers.
+- **Data is stored in Firestore**: Trips, activities, expenses, and packing lists are saved to Firestore and load from the server when you're logged in.
+- **If trips don't load**: Check the error message on the My Trips page. Ensure Firestore indexes are deployed: `firebase deploy --only firestore:indexes`.
+
 ## Features
 
 - **Auth** — Google sign-in with persisted session

@@ -5,6 +5,7 @@ import {
   where,
   orderBy,
   onSnapshot,
+  getDocsFromServer,
   addDoc,
   deleteDoc,
   doc,
@@ -22,15 +23,33 @@ export function useTrips(userId: string | undefined) {
     if (!userId) {
       setTrips([])
       setLoading(false)
+      setError(null)
       return
     }
 
+    setError(null)
     const q = query(
       collection(db, 'trips'),
       where('createdBy', '==', userId),
       orderBy('startDate', 'asc')
     )
 
+    // Initial load: fetch from server to ensure fresh data (e.g. new browser, different device)
+    getDocsFromServer(q)
+      .then((snapshot) => {
+        const data = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Trip[]
+        setTrips(data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err as Error)
+        setLoading(false)
+      })
+
+    // Real-time updates: keep listener for live sync
     const unsubscribe: Unsubscribe = onSnapshot(
       q,
       (snapshot) => {
