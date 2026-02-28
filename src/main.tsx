@@ -3,18 +3,30 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { APIProvider } from '@vis.gl/react-google-maps'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { env } from './lib/env'
 import App from './App'
 import './index.css'
 
+const hasMapsKey = !!env.googleMapsApiKey
+const app = (
+  <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ThemeProvider>
+  </BrowserRouter>
+)
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <APIProvider apiKey={env.googleMapsApiKey}>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </APIProvider>
+    {hasMapsKey ? (
+      <APIProvider apiKey={env.googleMapsApiKey}>
+        {app}
+      </APIProvider>
+    ) : (
+      app
+    )}
   </StrictMode>,
 )

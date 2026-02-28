@@ -4,11 +4,29 @@
 
 @layer base {
   body {
-    @apply bg-white font-display text-neutral-charcoal antialiased;
+    @apply bg-white dark:bg-dark-bg font-display text-neutral-charcoal dark:text-neutral-100 antialiased;
     min-height: 100dvh;
   }
 }
 
 .gradient-accent {
   background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+}
+
+.dark .gradient-accent {
+  background: linear-gradient(135deg, #7dd3fc 0%, #bae6fd 100%);
+}
+
+.dark .gradient-accent,
+.dark .gradient-accent * {
+  color: #0c4a6e !important;
+}
+
+/* Lighter gradient for Trip Overview page */
+.dark .gradient-accent-trip-overview {
+  background: linear-gradient(135deg, #7dd3fc 0%, #bae6fd 100%);
+}
+.dark .gradient-accent-trip-overview,
+.dark .gradient-accent-trip-overview * {
+  color: #0c4a6e !important;
 }

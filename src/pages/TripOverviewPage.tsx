@@ -4,38 +4,8 @@ import { useAllActivities } from '@/hooks/useAllActivities'
 import { useExpenses } from '@/hooks/useExpenses'
 import { usePackingItems } from '@/hooks/usePackingItems'
 import { useWeather } from '@/hooks/useWeather'
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  JPY: '¥',
-}
-
-function formatDateRange(start: string, end: string) {
-  const s = new Date(start)
-  const e = new Date(end)
-  return `${s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${e.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-}
-
-function daysUntil(dateStr: string) {
-  const d = new Date(dateStr)
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  d.setHours(0, 0, 0, 0)
-  return Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-}
-
-function getWeatherIcon(code: number) {
-  if (code === 0) return 'wb_sunny'
-  if (code <= 3) return 'cloud'
-  if (code >= 45 && code <= 48) return 'foggy'
-  if (code >= 51 && code <= 67) return 'water_drop'
-  if (code >= 71 && code <= 77) return 'ac_unit'
-  if (code >= 80 && code <= 82) return 'rainy'
-  if (code >= 95) return 'thunderstorm'
-  return 'wb_sunny'
-}
+import { CURRENCY_SYMBOLS, formatDateRange, daysUntil, getWeatherIcon, getUpcomingActivity } from '@/lib/utils'
+import { PageSkeleton } from '@/components/LoadingSkeleton'
 
 export default function TripOverviewPage() {
   const { tripId } = useParams<{ tripId: string }>()
@@ -43,41 +13,45 @@ export default function TripOverviewPage() {
   const { activities } = useAllActivities(tripId)
   const { totalSpent } = useExpenses(tripId)
   const { items, packedCount } = usePackingItems(tripId)
-  const { data: weather } = useWeather(
+  const hasCoordinates = !!(trip?.lat && trip?.lng && (trip.lat !== 0 || trip.lng !== 0))
+  const { data: weather, loading: weatherLoading, error: weatherError } = useWeather(
     trip?.lat ?? 0,
     trip?.lng ?? 0,
-    !!(trip?.lat && trip?.lng)
+    hasCoordinates
   )
 
   if (loading || !trip) {
-    return (
-      <div className="px-6 py-12 flex justify-center">
-        <div className="animate-pulse text-neutral-gray">Loading...</div>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   const symbol = CURRENCY_SYMBOLS[trip.currency] ?? trip.currency
   const remaining = trip.totalBudget - totalSpent
   const daysLeft = daysUntil(trip.startDate)
-  const firstActivity = activities[0]
-  const heroImage = `https://source.unsplash.com/800x400/?${encodeURIComponent(trip.destination)}`
+  const upcomingActivity = getUpcomingActivity(activities)
+  const heroImage = `https://picsum.photos/800/400?random=${trip.id}`
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
-      <div className="flex items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 justify-between border-b border-gray-100">
+      <div className="flex items-center bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 justify-between border-b border-gray-100 dark:border-dark-border">
         <Link
           to="/trips"
-          className="text-dark-gray flex size-10 items-center justify-start rounded-full active:bg-gray-100 transition-colors"
+          className="text-neutral-charcoal dark:text-neutral-100 flex size-10 items-center justify-start rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors"
         >
           <span className="material-symbols-outlined !text-2xl">
             arrow_back_ios_new
           </span>
         </Link>
-        <h2 className="text-dark-gray text-base font-semibold leading-tight tracking-tight flex-1 text-center">
+        <h2 className="text-neutral-charcoal dark:text-neutral-100 text-base font-semibold leading-tight tracking-tight flex-1 text-center">
           Trip Overview
         </h2>
-        <div className="flex w-10 items-center justify-end" />
+        <Link
+          to={`/trips/${tripId}/edit`}
+          className="w-10 h-10 flex items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors"
+        >
+          <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100 text-[22px]">
+            edit
+          </span>
+        </Link>
       </div>
       <div className="relative w-full h-80 px-4 pt-4">
         <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-sm">
@@ -108,7 +82,7 @@ export default function TripOverviewPage() {
       </div>
       <div className="px-6 mt-6 flex flex-col gap-6">
         {daysLeft > 0 && (
-          <div className="flex items-center justify-between gap-4 rounded-2xl bg-accent-blue-start/50 p-6 shadow-sm border border-blue-100/50">
+          <div className="flex items-center justify-between gap-4 rounded-2xl bg-accent-blue-start/50 gradient-accent-trip-overview p-6 shadow-sm border border-blue-100/50 dark:border-sky-300/40">
             <div className="flex flex-col">
               <p className="text-neutral-gray text-[10px] font-bold uppercase tracking-wider mb-1">
                 Upcoming Departure
@@ -117,34 +91,34 @@ export default function TripOverviewPage() {
                 {daysLeft} Day{daysLeft !== 1 ? 's' : ''} Left
               </p>
             </div>
-            <div className="flex items-center justify-center bg-white/60 rounded-xl p-3 shadow-sm">
-              <span className="material-symbols-outlined text-neutral-charcoal text-3xl">
+            <div className="flex items-center justify-center bg-white/60 dark:bg-dark-elevated rounded-xl p-3 shadow-sm">
+              <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100 text-3xl">
                 flight_takeoff
               </span>
             </div>
           </div>
         )}
         {weather && (
-          <div className="p-6 rounded-2xl bg-white border border-gray-100 flex items-center justify-between shadow-sm">
-            <div className="flex flex-col gap-1">
-              <p className="text-neutral-gray text-[10px] font-bold uppercase tracking-wider">
+          <div className="p-6 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border flex items-center justify-between gap-4 shadow-sm dark:shadow-none min-w-0">
+            <div className="flex flex-col gap-1 min-w-0 flex-1">
+              <p className="text-neutral-gray dark:text-neutral-400 text-[10px] font-bold uppercase tracking-wider">
                 Local Weather
               </p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-neutral-charcoal">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <p className="text-3xl font-bold text-neutral-charcoal dark:text-neutral-100">
                   {weather.current.temp}°C
                 </p>
-                <p className="text-neutral-gray text-sm font-medium">
+                <p className="text-neutral-gray dark:text-neutral-400 text-sm font-medium">
                   {weather.current.description}
                 </p>
               </div>
-              <p className="text-neutral-gray text-xs font-medium">
+              <p className="text-neutral-gray dark:text-neutral-400 text-xs font-medium">
                 Feels like {weather.current.feelsLike}°C
               </p>
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex-shrink-0">
               <span
-                className="material-symbols-outlined text-5xl text-yellow-500"
+                className="material-symbols-outlined text-5xl text-yellow-500 block"
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
                 {getWeatherIcon(weather.current.weatherCode)}
@@ -152,47 +126,78 @@ export default function TripOverviewPage() {
             </div>
           </div>
         )}
+        {!hasCoordinates && (
+          <div className="p-6 rounded-2xl bg-soft-gray/50 dark:bg-dark-elevated/50 border border-dashed border-gray-200 dark:border-dark-border flex items-center gap-4">
+            <span className="material-symbols-outlined text-4xl text-neutral-gray dark:text-neutral-500">cloud_off</span>
+            <div>
+              <p className="font-medium text-neutral-charcoal dark:text-neutral-100">Weather unavailable</p>
+              <p className="text-sm text-neutral-gray dark:text-neutral-400 mt-0.5">
+                Select a destination from the map when creating a trip to see local weather.
+              </p>
+            </div>
+          </div>
+        )}
+        {hasCoordinates && weatherLoading && (
+          <div className="p-6 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border flex items-center gap-4 animate-pulse">
+            <div className="h-10 w-24 bg-soft-gray dark:bg-dark-elevated rounded" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-32 bg-soft-gray dark:bg-dark-elevated rounded" />
+              <div className="h-3 w-24 bg-soft-gray dark:bg-dark-elevated rounded" />
+            </div>
+          </div>
+        )}
+        {hasCoordinates && weatherError && (
+          <div className="p-6 rounded-2xl bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 flex items-center gap-4">
+            <span className="material-symbols-outlined text-4xl text-red-400 dark:text-red-500">error</span>
+            <div>
+              <p className="font-medium text-neutral-charcoal dark:text-neutral-100">Weather unavailable</p>
+              <p className="text-sm text-neutral-gray dark:text-neutral-400 mt-0.5">
+                Could not load weather. Please try again later.
+              </p>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <Link
             to={`/trips/${tripId}/map`}
-            className="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm"
+            className="flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
           >
-            <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 text-neutral-charcoal border border-gray-100">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100 border border-gray-100 dark:border-dark-border">
               <span className="material-symbols-outlined">map</span>
             </div>
             <div>
-              <p className="font-bold text-sm text-neutral-charcoal">Map</p>
-              <p className="text-xs text-neutral-gray mt-0.5">
+              <p className="font-bold text-sm text-neutral-charcoal dark:text-neutral-100">Map</p>
+              <p className="text-xs text-neutral-gray dark:text-neutral-400 mt-0.5">
                 View activities on map
               </p>
             </div>
           </Link>
           <Link
             to={`/trips/${tripId}/itinerary`}
-            className="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm"
+            className="flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
           >
-            <div className="flex size-11 items-center justify-center rounded-xl bg-accent-blue-start/50 text-neutral-charcoal shadow-sm">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-accent-blue-start/50 gradient-accent-trip-overview text-neutral-charcoal shadow-sm">
               <span className="material-symbols-outlined">event_note</span>
             </div>
             <div>
-              <p className="font-bold text-sm text-neutral-charcoal">
+              <p className="font-bold text-sm text-neutral-charcoal dark:text-neutral-100">
                 Itinerary
               </p>
-              <p className="text-xs text-neutral-gray mt-0.5">
+              <p className="text-xs text-neutral-gray dark:text-neutral-400 mt-0.5">
                 {activities.length} activities planned
               </p>
             </div>
           </Link>
           <Link
             to={`/trips/${tripId}/budget`}
-            className="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm"
+            className="flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
           >
-            <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 text-neutral-charcoal border border-gray-100">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100 border border-gray-100 dark:border-dark-border">
               <span className="material-symbols-outlined">payments</span>
             </div>
             <div>
-              <p className="font-bold text-sm text-neutral-charcoal">Budget</p>
-              <p className="text-xs text-neutral-gray mt-0.5">
+              <p className="font-bold text-sm text-neutral-charcoal dark:text-neutral-100">Budget</p>
+              <p className="text-xs text-neutral-gray dark:text-neutral-400 mt-0.5">
                 {symbol}
                 {remaining.toLocaleString()} remaining
               </p>
@@ -200,61 +205,61 @@ export default function TripOverviewPage() {
           </Link>
           <Link
             to={`/trips/${tripId}/packing`}
-            className="flex flex-col items-start gap-4 rounded-2xl bg-white border border-gray-100 p-5 active:bg-gray-50 transition-colors shadow-sm"
+            className="flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
           >
-            <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 text-neutral-charcoal border border-gray-100">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100 border border-gray-100 dark:border-dark-border">
               <span className="material-symbols-outlined">inventory_2</span>
             </div>
             <div>
-              <p className="font-bold text-sm text-neutral-charcoal">
+              <p className="font-bold text-sm text-neutral-charcoal dark:text-neutral-100">
                 Packing List
               </p>
-              <p className="text-xs text-neutral-gray mt-0.5">
+              <p className="text-xs text-neutral-gray dark:text-neutral-400 mt-0.5">
                 {packedCount} / {items.length} items
               </p>
             </div>
           </Link>
         </div>
-        {firstActivity && (
+        {upcomingActivity && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-neutral-charcoal font-bold text-lg px-1">
+              <h3 className="text-neutral-charcoal dark:text-neutral-100 font-bold text-lg px-1">
                 Upcoming Activity
               </h3>
               <Link
                 to={`/trips/${tripId}/itinerary`}
-                className="text-xs font-bold text-neutral-gray uppercase tracking-widest"
+                className="text-xs font-bold text-neutral-gray dark:text-neutral-400 uppercase tracking-widest"
               >
                 View All
               </Link>
             </div>
             <Link
               to={`/trips/${tripId}/itinerary`}
-              className="relative overflow-hidden rounded-2xl bg-white border border-gray-100 p-4 flex gap-4 shadow-sm active:bg-gray-50 transition-colors block"
+              className="relative overflow-hidden rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-4 flex gap-4 shadow-sm dark:shadow-none active:bg-gray-50 dark:active:bg-dark-elevated transition-colors block"
             >
-              <div className="size-20 rounded-xl bg-soft-gray shrink-0 flex items-center justify-center">
-                <span className="material-symbols-outlined text-3xl text-neutral-charcoal">
+              <div className="size-20 rounded-xl bg-soft-gray dark:bg-dark-elevated shrink-0 flex items-center justify-center">
+                <span className="material-symbols-outlined text-3xl text-neutral-charcoal dark:text-neutral-100">
                   place
                 </span>
               </div>
               <div className="flex flex-col justify-center">
-                <p className="font-bold text-neutral-charcoal">
-                  {firstActivity.name}
+                <p className="font-bold text-neutral-charcoal dark:text-neutral-100">
+                  {upcomingActivity.name}
                 </p>
-                <p className="text-xs text-neutral-gray font-medium">
-                  {firstActivity.date} {firstActivity.startTime}
+                <p className="text-xs text-neutral-gray dark:text-neutral-400 font-medium">
+                  {upcomingActivity.date} {upcomingActivity.startTime}
                 </p>
                 <div className="mt-2 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px] text-neutral-charcoal">
+                  <span className="material-symbols-outlined text-[16px] text-neutral-charcoal dark:text-neutral-100">
                     location_on
                   </span>
-                  <span className="text-[11px] text-neutral-charcoal font-bold uppercase tracking-tight">
-                    {firstActivity.location || 'No location'}
+                  <span className="text-[11px] text-neutral-charcoal dark:text-neutral-100 font-bold uppercase tracking-tight">
+                    {upcomingActivity.location || 'No location'}
                   </span>
                 </div>
               </div>
               <div className="ml-auto flex items-center">
-                <span className="material-symbols-outlined text-neutral-gray">
+                <span className="material-symbols-outlined text-neutral-gray dark:text-neutral-400">
                   chevron_right
                 </span>
               </div>

@@ -1,9 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import AppLayout from '@/components/layout/AppLayout'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import LoginPage from '@/pages/LoginPage'
 import MyTripsPage from '@/pages/MyTripsPage'
 import CreateTripPage from '@/pages/CreateTripPage'
+import EditTripPage from '@/pages/EditTripPage'
 import TripOverviewPage from '@/pages/TripOverviewPage'
 import ItineraryPage from '@/pages/ItineraryPage'
 import MapViewPage from '@/pages/MapViewPage'
@@ -15,8 +17,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-pulse text-neutral-gray">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-dark-bg">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-soft-gray dark:border-dark-elevated border-t-accent-blue-start dark:border-t-sky-500 animate-spin" />
+          <span className="text-neutral-gray dark:text-neutral-400 text-sm">Loading...</span>
+        </div>
       </div>
     )
   }
@@ -47,6 +52,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <CreateTripPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/trips/:tripId/edit"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <EditTripPage />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -116,5 +131,9 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return <AppRoutes />
+  return (
+    <ErrorBoundary>
+      <AppRoutes />
+    </ErrorBoundary>
+  )
 }

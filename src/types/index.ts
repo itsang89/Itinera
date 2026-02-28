@@ -55,10 +55,13 @@ export interface Expense {
 }
 
 export type PackingCategory =
-  | 'Clothes'
-  | 'Electronics'
-  | 'Toiletries'
   | 'Documents'
+  | 'Clothes'
+  | 'Footwear'
+  | 'Toiletries'
+  | 'Health'
+  | 'Electronics'
+  | 'Accessories'
   | 'Other'
 
 export interface PackingItem {

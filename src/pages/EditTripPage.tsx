@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { addDoc, collection } from 'firebase/firestore'
-import { useAuth } from '@/context/AuthContext'
-import { useTrips } from '@/hooks/useTrips'
-import { useUserProfile, type CurrencyCode } from '@/hooks/useUserProfile'
-import { db } from '@/lib/firebase'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useTrip } from '@/hooks/useTrip'
+import type { CurrencyCode } from '@/hooks/useUserProfile'
 import { PlacesAutocomplete } from '@/components/places/PlacesAutocomplete'
-import { DEFAULT_PACKING_ITEMS } from '@/lib/packing'
-import type { Trip } from '@/types'
+import { PageSkeleton } from '@/components/LoadingSkeleton'
 
 const CURRENCIES = [
   { code: 'USD', symbol: '$', label: 'USD ($)' },
@@ -17,25 +13,33 @@ const CURRENCIES = [
   { code: 'JPY', symbol: '¥', label: 'JPY (¥)' },
 ]
 
-export default function CreateTripPage() {
-  const { user } = useAuth()
-  const { createTrip } = useTrips(user?.uid)
-  const { defaultCurrency } = useUserProfile(user?.uid)
+export default function EditTripPage() {
+  const { tripId } = useParams<{ tripId: string }>()
+  const navigate = useNavigate()
+  const { trip, loading, updateTrip } = useTrip(tripId)
   const [title, setTitle] = useState('')
   const [destination, setDestination] = useState('')
   const [lat, setLat] = useState<number>(0)
   const [lng, setLng] = useState<number>(0)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [currency, setCurrency] = useState(defaultCurrency)
-
-  useEffect(() => {
-    setCurrency(defaultCurrency)
-  }, [defaultCurrency])
+  const [currency, setCurrency] = useState<CurrencyCode>('USD')
   const [totalBudget, setTotalBudget] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (trip) {
+      setTitle(trip.title)
+      setDestination(trip.destination)
+      setLat(trip.lat)
+      setLng(trip.lng)
+      setStartDate(trip.startDate)
+      setEndDate(trip.endDate)
+      setCurrency((trip.currency as CurrencyCode) || 'USD')
+      setTotalBudget(String(trip.totalBudget || ''))
+    }
+  }, [trip])
 
   const handlePlaceSelect = (place: { formatted_address: string; lat: number; lng: number }) => {
     setDestination(place.formatted_address)
@@ -64,10 +68,10 @@ export default function CreateTripPage() {
       setError('End date must be after start date')
       return
     }
-    if (!user) return
+    if (!tripId) return
     setSubmitting(true)
     try {
-      const tripData: Omit<Trip, 'id'> = {
+      await updateTrip({
         title: title.trim(),
         destination: destination.trim(),
         lat,
@@ -76,26 +80,7 @@ export default function CreateTripPage() {
         endDate,
         totalBudget: parseFloat(totalBudget) || 0,
         currency,
-        createdBy: user.uid,
-      }
-      const tripId = await createTrip(tripData)
-
-      let dayNumber = 1
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        await addDoc(collection(db, 'trips', tripId, 'days'), {
-          date: d.toISOString().split('T')[0],
-          dayNumber: dayNumber++,
-        })
-      }
-
-      for (const item of DEFAULT_PACKING_ITEMS) {
-        await addDoc(collection(db, 'trips', tripId, 'packingItems'), {
-          name: item.name,
-          category: item.category,
-          packed: false,
-        })
-      }
-
+      })
       navigate(`/trips/${tripId}`)
     } catch (err) {
       setError((err as Error).message)
@@ -104,27 +89,31 @@ export default function CreateTripPage() {
     }
   }
 
+  if (loading || !trip) {
+    return <PageSkeleton />
+  }
+
   return (
     <>
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-dark-surface/90 backdrop-blur-xl px-6 py-4">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/trips/${tripId}`)}
             className="text-slate-400 dark:text-neutral-400 flex size-10 items-center justify-start active:opacity-50 transition-opacity"
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>
           <h2 className="text-slate-900 dark:text-neutral-100 text-[17px] font-semibold flex-1 text-center pr-10">
-            New Trip
+            Edit Trip
           </h2>
         </div>
       </header>
       <div className="px-6 pb-2">
         <h1 className="text-slate-900 dark:text-neutral-100 tracking-tight text-2xl font-bold pt-4">
-          Plan your next adventure
+          Update trip details
         </h1>
         <p className="text-slate-400 dark:text-neutral-400 text-[15px] mt-1">
-          Fill in the details for your journey.
+          Change any of the details below.
         </p>
       </div>
       <form
@@ -178,6 +167,9 @@ export default function CreateTripPage() {
               className="flex-1 rounded-ios text-slate-900 dark:text-neutral-100 border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface h-[52px] px-4 text-base"
             />
           </div>
+          <p className="text-xs text-neutral-gray dark:text-neutral-400 mt-1.5">
+            Shortening dates will remove activities on removed days.
+          </p>
         </div>
         <div className="flex gap-4">
           <div className="flex flex-col w-1/3">
@@ -216,10 +208,8 @@ export default function CreateTripPage() {
             disabled={submitting}
             className="w-full h-[56px] gradient-accent text-white rounded-ios font-bold text-lg shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70"
           >
-            <span>{submitting ? 'Creating...' : 'Create Trip'}</span>
-            <span className="material-symbols-outlined text-[20px]">
-              flight_takeoff
-            </span>
+            <span>{submitting ? 'Saving...' : 'Save Changes'}</span>
+            <span className="material-symbols-outlined text-[20px]">check_circle</span>
           </button>
         </div>
       </form>

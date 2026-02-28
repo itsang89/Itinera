@@ -31,6 +31,10 @@ export function usePackingItems(tripId: string | undefined) {
         })) as PackingItem[]
         setItems(data)
         setLoading(false)
+      },
+      (err) => {
+        setLoading(false)
+        console.error('usePackingItems failed:', err)
       }
     )
 

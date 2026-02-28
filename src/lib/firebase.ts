@@ -1,6 +1,10 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+} from 'firebase/firestore'
 import { env } from './env'
 
 const firebaseConfig = {
@@ -14,17 +18,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = getFirestore(app)
-export const googleProvider = new GoogleAuthProvider()
 
-export async function enableOfflinePersistence() {
-  try {
-    await enableIndexedDbPersistence(db)
-  } catch (err) {
-    if ((err as { code?: string }).code === 'failed-precondition') {
-      console.warn('Offline persistence failed: multiple tabs open')
-    } else {
-      console.warn('Offline persistence failed:', err)
-    }
-  }
-}
+// Use persistentSingleTabManager to avoid localStorage (avoids "INTERNAL ASSERTION FAILED: Unexpected state"
+// when localStorage is full or corrupted - see firebase/firebase-js-sdk#8305)
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager(undefined),
+  }),
+})
+
+export const googleProvider = new GoogleAuthProvider()

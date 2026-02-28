@@ -28,14 +28,21 @@ export function useExpenses(tripId: string | undefined) {
       orderBy('date', 'desc')
     )
 
-    const unsubscribe: Unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as Expense[]
-      setExpenses(data)
-      setLoading(false)
-    })
+    const unsubscribe: Unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Expense[]
+        setExpenses(data)
+        setLoading(false)
+      },
+      (err) => {
+        setLoading(false)
+        console.error('useExpenses failed:', err)
+      }
+    )
 
     return () => unsubscribe()
   }, [tripId])

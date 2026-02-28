@@ -4,6 +4,8 @@ import { Map, Marker } from '@vis.gl/react-google-maps'
 import { useTrip } from '@/hooks/useTrip'
 import { useAllActivities } from '@/hooks/useAllActivities'
 import { getCategoryIcon } from '@/hooks/useActivities'
+import { env } from '@/lib/env'
+import { PageSkeleton } from '@/components/LoadingSkeleton'
 import type { ActivityCategory } from '@/types'
 
 function MapContent({
@@ -63,29 +65,25 @@ export default function MapViewPage() {
   }, [trip, activities])
 
   if (tripLoading || !trip) {
-    return (
-      <div className="px-6 py-12 flex justify-center">
-        <div className="animate-pulse text-neutral-gray">Loading...</div>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)]">
-      <header className="relative z-10 px-6 py-5 flex items-center justify-between bg-white/90 backdrop-blur-md">
+      <header className="relative z-10 px-6 py-5 flex items-center justify-between bg-white dark:bg-dark-surface/90 dark:bg-dark-surface/90 backdrop-blur-md">
         <Link
           to={`/trips/${tripId}`}
-          className="w-11 h-11 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-100 active:scale-95 transition-all"
+          className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-dark-surface shadow-lg border border-gray-100 dark:border-dark-border active:scale-95 transition-all"
         >
-          <span className="material-symbols-outlined text-neutral-charcoal">
+          <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100">
             chevron_left
           </span>
         </Link>
-        <div className="flex bg-white/90 backdrop-blur-md p-1 rounded-full shadow-lg border border-gray-100">
+        <div className="flex bg-white dark:bg-dark-surface/90 dark:bg-dark-surface/90 backdrop-blur-md p-1 rounded-full shadow-lg border border-gray-100 dark:border-dark-border">
           <button
             onClick={() => setView('list')}
             className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
-              view === 'list' ? 'text-sky-900 gradient-accent shadow-sm' : 'text-neutral-gray'
+              view === 'list' ? 'text-sky-900 gradient-accent shadow-sm' : 'text-neutral-gray dark:text-neutral-400'
             }`}
           >
             List
@@ -93,7 +91,7 @@ export default function MapViewPage() {
           <button
             onClick={() => setView('map')}
             className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
-              view === 'map' ? 'text-sky-900 gradient-accent shadow-sm' : 'text-neutral-gray'
+              view === 'map' ? 'text-sky-900 gradient-accent shadow-sm' : 'text-neutral-gray dark:text-neutral-400'
             }`}
           >
             Map
@@ -104,7 +102,7 @@ export default function MapViewPage() {
       {view === 'list' ? (
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {activities.length === 0 ? (
-            <div className="py-12 text-center text-neutral-gray">
+            <div className="py-12 text-center text-neutral-gray dark:text-neutral-400">
               No activities with locations yet.
             </div>
           ) : (
@@ -112,27 +110,35 @@ export default function MapViewPage() {
               <Link
                 key={a.id}
                 to={`/trips/${tripId}/itinerary`}
-                className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
+                className="flex items-center gap-4 p-4 bg-white dark:bg-dark-surface rounded-2xl border border-gray-100 dark:border-dark-border shadow-sm"
               >
-                <div className="w-10 h-10 rounded-full bg-soft-gray flex items-center justify-center">
-                  <span className="material-symbols-outlined text-neutral-charcoal">
+                <div className="w-10 h-10 rounded-full bg-soft-gray dark:bg-dark-elevated flex items-center justify-center">
+                  <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100">
                     {getCategoryIcon(a.category)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-neutral-charcoal truncate">
+                  <p className="font-semibold text-neutral-charcoal dark:text-neutral-100 truncate">
                     {a.name}
                   </p>
-                  <p className="text-xs text-neutral-gray truncate">
+                  <p className="text-xs text-neutral-gray dark:text-neutral-400 truncate">
                     {a.location || 'No location'}
                   </p>
                 </div>
-                <span className="material-symbols-outlined text-neutral-gray">
+                <span className="material-symbols-outlined text-neutral-gray dark:text-neutral-400">
                   chevron_right
                 </span>
               </Link>
             ))
           )}
+        </div>
+      ) : !env.googleMapsApiKey ? (
+        <div className="flex-1 flex items-center justify-center min-h-[400px] px-6">
+          <div className="text-center text-neutral-gray dark:text-neutral-400">
+            <span className="material-symbols-outlined text-5xl mb-4 block">map</span>
+            <p className="font-medium">Map unavailable</p>
+            <p className="text-sm mt-1">Add VITE_GOOGLE_MAPS_API_KEY to .env to enable maps.</p>
+          </div>
         </div>
       ) : (
         <div className="flex-1 relative min-h-[400px]">

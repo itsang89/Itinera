@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { useMapsLibrary } from '@vis.gl/react-google-maps'
+import { env } from '@/lib/env'
 
 export interface PlaceResult {
   formatted_address: string
@@ -17,7 +18,41 @@ interface PlacesAutocompleteProps {
   disabled?: boolean
 }
 
-export function PlacesAutocomplete({
+function FallbackInput({
+  value,
+  onChange,
+  onPlaceSelect,
+  placeholder,
+  className,
+  disabled,
+}: PlacesAutocompleteProps) {
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={() => value.trim() && onPlaceSelect({ formatted_address: value.trim(), lat: 0, lng: 0 })}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={className}
+      />
+      <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-neutral-gray pointer-events-none">
+        search
+      </span>
+    </div>
+  )
+}
+
+export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
+  const { placeholder = 'Search for a place...', className = '', disabled = false } = props
+  if (!env.googleMapsApiKey) {
+    return <FallbackInput {...props} placeholder={placeholder} className={className} disabled={disabled} />
+  }
+  return <PlacesAutocompleteImpl {...props} />
+}
+
+function PlacesAutocompleteImpl({
   value,
   onChange,
   onPlaceSelect,

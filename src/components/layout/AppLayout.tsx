@@ -10,7 +10,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const showNav = !['/login'].includes(location.pathname)
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto w-full bg-white">
+    <div className="min-h-screen flex flex-col max-w-md mx-auto w-full bg-white dark:bg-dark-bg">
       <main className="flex-1 pb-24">{children ?? <Outlet />}</main>
       {showNav && <BottomNav />}
     </div>

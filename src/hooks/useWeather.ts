@@ -67,20 +67,24 @@ export function useWeather(lat: number, lng: number, enabled: boolean) {
       .then((res) => res.json())
       .then((json) => {
         if (cancelled) return
-        const current = json.current
-        const daily = json.daily
+        const current = json?.current
+        const daily = json?.daily
+        if (!current || !daily?.time) {
+          setError(new Error('Invalid weather response'))
+          return
+        }
         setData({
           current: {
-            temp: Math.round(current.temperature_2m),
-            feelsLike: Math.round(current.temperature_2m),
-            description: getWeatherDescription(current.weather_code),
-            weatherCode: current.weather_code,
+            temp: Math.round(current.temperature_2m ?? 0),
+            feelsLike: Math.round(current.temperature_2m ?? 0),
+            description: getWeatherDescription(current.weather_code ?? 0),
+            weatherCode: current.weather_code ?? 0,
           },
           daily: daily.time.map((date: string, i: number) => ({
             date,
-            tempMax: Math.round(daily.temperature_2m_max[i]),
-            tempMin: Math.round(daily.temperature_2m_min[i]),
-            weatherCode: daily.weather_code[i],
+            tempMax: Math.round(daily.temperature_2m_max?.[i] ?? 0),
+            tempMin: Math.round(daily.temperature_2m_min?.[i] ?? 0),
+            weatherCode: daily.weather_code?.[i] ?? 0,
           })),
         })
       })

@@ -40,15 +40,22 @@ export function useActivities(tripId: string | undefined, dayId: string | undefi
       orderBy('order', 'asc')
     )
 
-    const unsubscribe: Unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as Activity[]
-      data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.startTime || '').localeCompare(b.startTime || ''))
-      setActivities(data)
-      setLoading(false)
-    })
+    const unsubscribe: Unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Activity[]
+        data.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.startTime || '').localeCompare(b.startTime || ''))
+        setActivities(data)
+        setLoading(false)
+      },
+      (err) => {
+        setLoading(false)
+        console.error('useActivities failed:', err)
+      }
+    )
 
     return () => unsubscribe()
   }, [tripId, dayId])

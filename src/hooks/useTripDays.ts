@@ -26,14 +26,21 @@ export function useTripDays(tripId: string | undefined) {
       orderBy('dayNumber', 'asc')
     )
 
-    const unsubscribe: Unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as TripDay[]
-      setDays(data)
-      setLoading(false)
-    })
+    const unsubscribe: Unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as TripDay[]
+        setDays(data)
+        setLoading(false)
+      },
+      (err) => {
+        setLoading(false)
+        console.error('useTripDays failed:', err)
+      }
+    )
 
     return () => unsubscribe()
   }, [tripId])
