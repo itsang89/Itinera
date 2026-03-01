@@ -7,20 +7,6 @@
         {"fieldPath": "createdBy", "order": "ASCENDING"},
         {"fieldPath": "startDate", "order": "ASCENDING"}
       ]
-    },
-    {
-      "collectionGroup": "expenses",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {"fieldPath": "date", "order": "DESCENDING"}
-      ]
-    },
-    {
-      "collectionGroup": "activities",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {"fieldPath": "order", "order": "ASCENDING"}
-      ]
     }
   ],
   "fieldOverrides": []
