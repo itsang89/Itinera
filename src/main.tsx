@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { APIProvider } from '@vis.gl/react-google-maps'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { ToastProvider } from './context/ToastContext'
 import { env } from './lib/env'
 import App from './App'
 import './index.css'
@@ -13,7 +14,9 @@ const app = (
   <BrowserRouter>
     <ThemeProvider>
       <AuthProvider>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   </BrowserRouter>

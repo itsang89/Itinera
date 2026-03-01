@@ -9,7 +9,7 @@ interface ActivityFormProps {
   dayId: string
   activity: Activity | null
   currencySymbol?: string
-  onSave: (data: Omit<Activity, 'id'>) => void
+  onSave: (data: Omit<Activity, 'id'>) => void | Promise<void>
   onClose: () => void
 }
 
@@ -28,6 +28,7 @@ export default function ActivityForm({
   const [category, setCategory] = useState<ActivityCategory>('Attraction')
   const [estimatedCost, setEstimatedCost] = useState('')
   const [notes, setNotes] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (activity) {
@@ -45,29 +46,34 @@ export default function ActivityForm({
 
   const handlePlaceSelect = (place: {
     formatted_address: string
-    lat: number
-    lng: number
+    lat?: number
+    lng?: number
   }) => {
     setLocation(place.formatted_address)
-    setLat(place.lat)
-    setLng(place.lng)
+    if (place.lat != null) setLat(place.lat)
+    if (place.lng != null) setLng(place.lng)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
-    onSave({
-      name: name.trim(),
-      startTime,
-      endTime,
-      location,
-      lat,
-      lng,
-      category,
-      notes,
-      estimatedCost: parseFloat(estimatedCost) || 0,
-      order: activity?.order ?? 0,
-    })
+    if (!name.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      await Promise.resolve(onSave({
+        name: name.trim(),
+        startTime,
+        endTime,
+        location,
+        lat,
+        lng,
+        category,
+        notes,
+        estimatedCost: parseFloat(estimatedCost) || 0,
+        order: activity?.order ?? 0,
+      }))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -94,9 +100,9 @@ export default function ActivityForm({
           <div className="space-y-1">
             <label
               htmlFor="activity-name"
-              className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
+              className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
             >
-              Activity Name
+              Activity name
             </label>
             <input
               id="activity-name"
@@ -108,8 +114,8 @@ export default function ActivityForm({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1">
-                Start Time
+              <label className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1">
+                Start time
               </label>
               <div className="relative">
                 <input
@@ -124,8 +130,8 @@ export default function ActivityForm({
               </div>
             </div>
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1">
-                End Time
+              <label className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1">
+                End time
               </label>
               <div className="relative">
                 <input
@@ -141,7 +147,7 @@ export default function ActivityForm({
             </div>
           </div>
           <div className="space-y-1">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1">
+            <label className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1">
               Location
             </label>
             <PlacesAutocomplete
@@ -156,7 +162,7 @@ export default function ActivityForm({
             <div className="space-y-1">
               <label
                 htmlFor="category"
-                className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
+                className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
               >
                 Category
               </label>
@@ -176,7 +182,7 @@ export default function ActivityForm({
             <div className="space-y-1">
               <label
                 htmlFor="cost"
-                className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
+                className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
               >
                 Cost
               </label>
@@ -199,7 +205,7 @@ export default function ActivityForm({
           <div className="space-y-1">
             <label
               htmlFor="notes"
-              className="block text-[11px] font-bold uppercase tracking-wider text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
+              className="block text-[11px] font-bold text-neutral-gray dark:text-neutral-400 mb-2 ml-1"
             >
               Notes
             </label>
@@ -218,10 +224,20 @@ export default function ActivityForm({
           <button
             form="activity-form"
             type="submit"
-            className="w-full py-4 gradient-accent text-sky-900 font-bold rounded-2xl shadow-lg shadow-sky-200/50 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+            disabled={submitting}
+            className="w-full py-4 gradient-accent text-sky-900 font-bold rounded-2xl shadow-lg shadow-sky-300/50 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70"
           >
-            <span className="material-symbols-outlined">check_circle</span>
-            Save Activity
+            {submitting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-sky-900 border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined">check_circle</span>
+                Save Activity
+              </>
+            )}
           </button>
         </div>
       </div>

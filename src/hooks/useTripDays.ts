@@ -13,14 +13,17 @@ import type { TripDay } from '@/types'
 export function useTripDays(tripId: string | undefined) {
   const [days, setDays] = useState<TripDay[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!tripId) {
       setDays([])
       setLoading(false)
+      setError(null)
       return
     }
 
+    setError(null)
     const q = query(
       collection(db, 'trips', tripId, 'days'),
       orderBy('dayNumber', 'asc')
@@ -37,8 +40,8 @@ export function useTripDays(tripId: string | undefined) {
         setLoading(false)
       },
       (err) => {
+        setError(err as Error)
         setLoading(false)
-        console.error('useTripDays failed:', err)
       }
     )
 
@@ -61,5 +64,5 @@ export function useTripDays(tripId: string | undefined) {
     }
   }
 
-  return { days, loading, createDays }
+  return { days, loading, error, createDays }
 }

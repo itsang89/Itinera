@@ -18,8 +18,10 @@ function getSystemTheme(): 'light' | 'dark' {
 
 function getStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'system'
-  const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
-  return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
+  const stored = localStorage.getItem(STORAGE_KEY)
+  if (!stored || stored === 'system') return 'system'
+  if (stored === 'light' || stored === 'dark') return stored
+  return 'system'
 }
 
 function resolveTheme(preference: Theme): 'light' | 'dark' {
@@ -42,7 +44,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next)
-    localStorage.setItem(STORAGE_KEY, next)
+    if (next === 'system') {
+      localStorage.removeItem(STORAGE_KEY)
+    } else {
+      localStorage.setItem(STORAGE_KEY, next)
+    }
   }, [])
 
   useEffect(() => {

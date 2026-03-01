@@ -1,15 +1,23 @@
-import { Link, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, Navigate, useParams } from 'react-router-dom'
+import { clearLastTripId } from '@/lib/lastTrip'
+import { useAuth } from '@/context/AuthContext'
 import { useTrip } from '@/hooks/useTrip'
+import { useUserProfile } from '@/hooks/useUserProfile'
 import { useAllActivities } from '@/hooks/useAllActivities'
 import { useExpenses } from '@/hooks/useExpenses'
 import { usePackingItems } from '@/hooks/usePackingItems'
 import { useWeather } from '@/hooks/useWeather'
 import { CURRENCY_SYMBOLS, formatDateRange, daysUntil, getWeatherIcon, getUpcomingActivity } from '@/lib/utils'
-import { PageSkeleton } from '@/components/LoadingSkeleton'
+import { TripOverviewSkeleton } from '@/components/LoadingSkeleton'
+import { ProgressRing } from '@/components/ProgressRing'
+import { CurrencyConverterCard } from '@/components/CurrencyConverterCard'
 
 export default function TripOverviewPage() {
   const { tripId } = useParams<{ tripId: string }>()
-  const { trip, loading } = useTrip(tripId)
+  const { user } = useAuth()
+  const { defaultCurrency } = useUserProfile(user?.uid)
+  const { trip, loading, error } = useTrip(tripId)
   const { activities } = useAllActivities(tripId)
   const { totalSpent } = useExpenses(tripId)
   const { items, packedCount } = usePackingItems(tripId)
@@ -19,64 +27,109 @@ export default function TripOverviewPage() {
     trip?.lng ?? 0,
     hasCoordinates
   )
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
 
-  if (loading || !trip) {
-    return <PageSkeleton />
+  if (loading) {
+    return <TripOverviewSkeleton />
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white dark:bg-dark-bg">
+        <span className="material-symbols-outlined text-5xl text-red-400 dark:text-red-500 mb-4">error</span>
+        <h2 className="text-xl font-bold text-neutral-charcoal dark:text-neutral-100 mb-2">Failed to load trip</h2>
+        <p className="text-neutral-gray dark:text-neutral-400 text-sm text-center mb-6">{error.message}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="py-3 px-6 gradient-accent rounded-ios text-sky-900 font-bold"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!trip) {
+    clearLastTripId()
+    return <Navigate to="/trips" replace />
   }
 
   const symbol = CURRENCY_SYMBOLS[trip.currency] ?? trip.currency
   const remaining = trip.totalBudget - totalSpent
   const daysLeft = daysUntil(trip.startDate)
   const upcomingActivity = getUpcomingActivity(activities)
-  const heroImage = `https://picsum.photos/800/400?random=${trip.id}`
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
       <div className="flex items-center bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 justify-between border-b border-gray-100 dark:border-dark-border">
         <Link
           to="/trips"
-          className="text-neutral-charcoal dark:text-neutral-100 flex size-10 items-center justify-start rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors"
+          className="text-neutral-charcoal dark:text-neutral-100 flex size-11 min-w-[44px] min-h-[44px] items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors"
+          aria-label="Back to trips"
         >
           <span className="material-symbols-outlined !text-2xl">
-            arrow_back_ios_new
+            home
           </span>
         </Link>
         <h2 className="text-neutral-charcoal dark:text-neutral-100 text-base font-semibold leading-tight tracking-tight flex-1 text-center">
           Trip Overview
         </h2>
-        <Link
-          to={`/trips/${tripId}/edit`}
-          className="w-10 h-10 flex items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors"
-        >
-          <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100 text-[22px]">
-            edit
-          </span>
-        </Link>
-      </div>
-      <div className="relative w-full h-80 px-4 pt-4">
-        <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-sm">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${heroImage}')` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 p-6 w-full">
-            <div className="flex flex-col gap-1">
-              <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white w-fit mb-2 border border-white/30">
-                {trip.title}
-              </span>
-              <h1 className="text-3xl font-bold text-white tracking-tight">
-                {trip.destination}
-              </h1>
-              <div className="flex items-center gap-2 text-white/90 text-sm">
-                <span className="material-symbols-outlined text-sm">
-                  calendar_month
-                </span>
-                <p className="font-medium">
-                  {formatDateRange(trip.startDate, trip.endDate)}
-                </p>
+        <div className="relative">
+          <button
+            onClick={() => setShowMoreMenu(!showMoreMenu)}
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors"
+            aria-label="More options"
+          >
+            <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100 text-[22px]">
+              more_vert
+            </span>
+          </button>
+          {showMoreMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowMoreMenu(false)}
+                aria-hidden="true"
+              />
+              <div className="absolute right-0 top-full mt-1 z-50 min-w-[180px] py-2 rounded-xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border shadow-lg overflow-hidden">
+                <Link
+                  to="/profile"
+                  onClick={() => setShowMoreMenu(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-neutral-charcoal dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-dark-elevated transition-colors min-h-[44px]"
+                  aria-label="Profile"
+                >
+                  <span className="material-symbols-outlined text-[22px]">account_circle</span>
+                  <span className="font-medium text-[15px]">Profile</span>
+                </Link>
+                <Link
+                  to={`/trips/${tripId}/edit`}
+                  onClick={() => setShowMoreMenu(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-neutral-charcoal dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-dark-elevated transition-colors min-h-[44px]"
+                  aria-label="Edit trip"
+                >
+                  <span className="material-symbols-outlined text-[22px]">edit</span>
+                  <span className="font-medium text-[15px]">Edit trip</span>
+                </Link>
               </div>
-            </div>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="px-6 pt-6 pb-4">
+        <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-accent-blue-start/20 to-accent-blue-end/20 dark:from-sky-900/30 dark:to-sky-800/30 border border-gray-100 dark:border-dark-border p-6">
+          <span className="text-[10px] font-bold text-neutral-gray dark:text-neutral-400">
+            {trip.title}
+          </span>
+          <h1 className="text-2xl font-bold text-neutral-charcoal dark:text-neutral-100 tracking-tight mt-1">
+            {trip.destination}
+          </h1>
+          <div className="flex items-center gap-2 text-neutral-gray dark:text-neutral-400 text-sm mt-2">
+            <span className="material-symbols-outlined text-sm">
+              calendar_month
+            </span>
+            <p className="font-medium">
+              {formatDateRange(trip.startDate, trip.endDate)}
+            </p>
           </div>
         </div>
       </div>
@@ -84,7 +137,7 @@ export default function TripOverviewPage() {
         {daysLeft > 0 && (
           <div className="flex items-center justify-between gap-4 rounded-2xl bg-accent-blue-start/50 gradient-accent-trip-overview p-6 shadow-sm border border-blue-100/50 dark:border-sky-300/40">
             <div className="flex flex-col">
-              <p className="text-neutral-gray text-[10px] font-bold uppercase tracking-wider mb-1">
+              <p className="text-neutral-gray text-[10px] font-bold mb-1">
                 Upcoming Departure
               </p>
               <p className="text-neutral-charcoal text-2xl font-bold tracking-tight">
@@ -101,7 +154,7 @@ export default function TripOverviewPage() {
         {weather && (
           <div className="p-6 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border flex items-center justify-between gap-4 shadow-sm dark:shadow-none min-w-0">
             <div className="flex flex-col gap-1 min-w-0 flex-1">
-              <p className="text-neutral-gray dark:text-neutral-400 text-[10px] font-bold uppercase tracking-wider">
+              <p className="text-neutral-gray dark:text-neutral-400 text-[10px] font-bold">
                 Local Weather
               </p>
               <div className="flex items-baseline gap-2 flex-wrap">
@@ -157,6 +210,7 @@ export default function TripOverviewPage() {
             </div>
           </div>
         )}
+        <CurrencyConverterCard tripCurrency={trip.currency} userCurrency={defaultCurrency} />
         <div className="grid grid-cols-2 gap-4">
           <Link
             to={`/trips/${tripId}/map`}
@@ -190,8 +244,17 @@ export default function TripOverviewPage() {
           </Link>
           <Link
             to={`/trips/${tripId}/budget`}
-            className="flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
+            className="relative flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
           >
+            <div className="absolute top-3 right-3">
+              <ProgressRing
+                value={trip.totalBudget > 0 ? (totalSpent / trip.totalBudget) * 100 : 0}
+                max={100}
+                size={40}
+                strokeWidth={4}
+                variant="compact"
+              />
+            </div>
             <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100 border border-gray-100 dark:border-dark-border">
               <span className="material-symbols-outlined">payments</span>
             </div>
@@ -205,8 +268,18 @@ export default function TripOverviewPage() {
           </Link>
           <Link
             to={`/trips/${tripId}/packing`}
-            className="flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
+            className="relative flex flex-col items-start gap-4 rounded-2xl bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border p-5 active:bg-gray-50 dark:active:bg-dark-elevated transition-colors shadow-sm dark:shadow-none"
           >
+            <div className="absolute top-3 right-3">
+              <ProgressRing
+                value={items.length > 0 ? packedCount : 0}
+                max={items.length || 1}
+                size={40}
+                strokeWidth={4}
+                sublabel={items.length > 0 ? `${packedCount}/${items.length}` : '0/0'}
+                variant="compact"
+              />
+            </div>
             <div className="flex size-11 items-center justify-center rounded-xl bg-gray-50 dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100 border border-gray-100 dark:border-dark-border">
               <span className="material-symbols-outlined">inventory_2</span>
             </div>
@@ -228,7 +301,7 @@ export default function TripOverviewPage() {
               </h3>
               <Link
                 to={`/trips/${tripId}/itinerary`}
-                className="text-xs font-bold text-neutral-gray dark:text-neutral-400 uppercase tracking-widest"
+                className="text-xs font-bold text-neutral-gray dark:text-neutral-400"
               >
                 View All
               </Link>
@@ -253,7 +326,7 @@ export default function TripOverviewPage() {
                   <span className="material-symbols-outlined text-[16px] text-neutral-charcoal dark:text-neutral-100">
                     location_on
                   </span>
-                  <span className="text-[11px] text-neutral-charcoal dark:text-neutral-100 font-bold uppercase tracking-tight">
+                  <span className="text-[11px] text-neutral-charcoal dark:text-neutral-100 font-bold">
                     {upcomingActivity.location || 'No location'}
                   </span>
                 </div>

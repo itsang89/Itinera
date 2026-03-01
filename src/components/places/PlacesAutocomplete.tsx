@@ -4,8 +4,8 @@ import { env } from '@/lib/env'
 
 export interface PlaceResult {
   formatted_address: string
-  lat: number
-  lng: number
+  lat?: number
+  lng?: number
   name?: string
 }
 
@@ -32,7 +32,7 @@ function FallbackInput({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={() => value.trim() && onPlaceSelect({ formatted_address: value.trim(), lat: 0, lng: 0 })}
+        onBlur={() => value.trim() && onPlaceSelect({ formatted_address: value.trim() })}
         placeholder={placeholder}
         disabled={disabled}
         className={className}

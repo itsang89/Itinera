@@ -1,22 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '@/context/ToastContext'
 import { useTrip } from '@/hooks/useTrip'
 import type { CurrencyCode } from '@/hooks/useUserProfile'
 import { PlacesAutocomplete } from '@/components/places/PlacesAutocomplete'
 import { PageSkeleton } from '@/components/LoadingSkeleton'
-
-const CURRENCIES = [
-  { code: 'USD', symbol: '$', label: 'USD ($)' },
-  { code: 'EUR', symbol: '€', label: 'EUR (€)' },
-  { code: 'GBP', symbol: '£', label: 'GBP (£)' },
-  { code: 'HKD', symbol: 'HK$', label: 'HKD (HK$)' },
-  { code: 'JPY', symbol: '¥', label: 'JPY (¥)' },
-]
+import { CURRENCY_OPTIONS } from '@/lib/utils'
 
 export default function EditTripPage() {
   const { tripId } = useParams<{ tripId: string }>()
   const navigate = useNavigate()
-  const { trip, loading, updateTrip } = useTrip(tripId)
+  const { trip, loading, error: tripError, updateTrip } = useTrip(tripId)
   const [title, setTitle] = useState('')
   const [destination, setDestination] = useState('')
   const [lat, setLat] = useState<number>(0)
@@ -27,6 +21,22 @@ export default function EditTripPage() {
   const [totalBudget, setTotalBudget] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [dateError, setDateError] = useState('')
+  const { showToast } = useToast()
+
+  useEffect(() => {
+    if (!startDate || !endDate) {
+      setDateError('')
+      return
+    }
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    if (end < start) {
+      setDateError('End date must be after start date')
+    } else {
+      setDateError('')
+    }
+  }, [startDate, endDate])
 
   useEffect(() => {
     if (trip) {
@@ -41,10 +51,10 @@ export default function EditTripPage() {
     }
   }, [trip])
 
-  const handlePlaceSelect = (place: { formatted_address: string; lat: number; lng: number }) => {
+  const handlePlaceSelect = (place: { formatted_address: string; lat?: number; lng?: number }) => {
     setDestination(place.formatted_address)
-    setLat(place.lat)
-    setLng(place.lng)
+    if (place.lat != null) setLat(place.lat)
+    if (place.lng != null) setLng(place.lng)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +91,7 @@ export default function EditTripPage() {
         totalBudget: parseFloat(totalBudget) || 0,
         currency,
       })
+      showToast('Trip updated!')
       navigate(`/trips/${tripId}`)
     } catch (err) {
       setError((err as Error).message)
@@ -89,8 +100,39 @@ export default function EditTripPage() {
     }
   }
 
-  if (loading || !trip) {
+  if (loading) {
     return <PageSkeleton />
+  }
+
+  if (tripError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white dark:bg-dark-bg">
+        <span className="material-symbols-outlined text-5xl text-red-400 dark:text-red-500 mb-4">error</span>
+        <h2 className="text-xl font-bold text-neutral-charcoal dark:text-neutral-100 mb-2">Failed to load trip</h2>
+        <p className="text-neutral-gray dark:text-neutral-400 text-sm text-center mb-6">{tripError.message}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="py-3 px-6 gradient-accent rounded-ios text-sky-900 font-bold"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!trip) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white dark:bg-dark-bg">
+        <span className="material-symbols-outlined text-5xl text-neutral-gray dark:text-neutral-500 mb-4">travel_explore</span>
+        <h2 className="text-xl font-bold text-neutral-charcoal dark:text-neutral-100 mb-2">Trip not found</h2>
+        <p className="text-neutral-gray dark:text-neutral-400 text-sm text-center mb-6">
+          This trip may have been deleted or the link is incorrect.
+        </p>
+        <Link to="/trips" className="py-3 px-6 gradient-accent rounded-ios text-sky-900 font-bold">
+          Back to trips
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -99,7 +141,7 @@ export default function EditTripPage() {
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button
             onClick={() => navigate(`/trips/${tripId}`)}
-            className="text-slate-400 dark:text-neutral-400 flex size-10 items-center justify-start active:opacity-50 transition-opacity"
+            className="text-slate-400 dark:text-neutral-400 flex size-11 min-w-[44px] min-h-[44px] items-center justify-start active:opacity-50 transition-opacity"
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>
@@ -126,8 +168,8 @@ export default function EditTripPage() {
           </div>
         )}
         <div className="flex flex-col w-full">
-          <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium uppercase tracking-wider mb-2 ml-1">
-            Trip Name
+          <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium mb-2 ml-1">
+            Trip name
           </label>
           <input
             type="text"
@@ -138,7 +180,7 @@ export default function EditTripPage() {
           />
         </div>
         <div className="flex flex-col w-full">
-          <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium uppercase tracking-wider mb-2 ml-1">
+          <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium mb-2 ml-1">
             Destination
           </label>
           <PlacesAutocomplete
@@ -150,8 +192,8 @@ export default function EditTripPage() {
           />
         </div>
         <div className="flex flex-col w-full">
-          <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium uppercase tracking-wider mb-2 ml-1">
-            Select Dates
+          <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium mb-2 ml-1">
+            Select dates
           </label>
           <div className="flex gap-4">
             <input
@@ -167,13 +209,16 @@ export default function EditTripPage() {
               className="flex-1 rounded-ios text-slate-900 dark:text-neutral-100 border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface h-[52px] px-4 text-base"
             />
           </div>
+          {dateError && (
+            <p className="text-red-500 dark:text-red-400 text-sm mt-1.5">{dateError}</p>
+          )}
           <p className="text-xs text-neutral-gray dark:text-neutral-400 mt-1.5">
             Shortening dates will remove activities on removed days.
           </p>
         </div>
         <div className="flex gap-4">
           <div className="flex flex-col w-1/3">
-            <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium uppercase tracking-wider mb-2 ml-1">
+            <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium mb-2 ml-1">
               Currency
             </label>
             <select
@@ -181,7 +226,7 @@ export default function EditTripPage() {
               onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
               className="w-full rounded-ios text-slate-900 dark:text-neutral-100 border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-surface h-[52px] pl-4 pr-10 text-base font-normal focus:border-accent-blue-start dark:focus:border-sky-500 focus:ring-2 focus:ring-accent-blue-start/20 dark:focus:ring-sky-500/20"
             >
-              {CURRENCIES.map((c) => (
+              {CURRENCY_OPTIONS.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.label}
                 </option>
@@ -189,7 +234,7 @@ export default function EditTripPage() {
             </select>
           </div>
           <div className="flex flex-col flex-1">
-            <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium uppercase tracking-wider mb-2 ml-1">
+            <label className="text-slate-500 dark:text-neutral-400 text-[13px] font-medium mb-2 ml-1">
               Budget
             </label>
             <input
@@ -205,7 +250,7 @@ export default function EditTripPage() {
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-white via-white to-transparent dark:from-dark-bg dark:via-dark-bg z-[60]">
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || !!dateError}
             className="w-full h-[56px] gradient-accent text-white rounded-ios font-bold text-lg shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70"
           >
             <span>{submitting ? 'Saving...' : 'Save Changes'}</span>

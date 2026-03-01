@@ -5,6 +5,7 @@ import {
   orderBy,
   onSnapshot,
   addDoc,
+  updateDoc,
   deleteDoc,
   doc,
   type Unsubscribe,
@@ -15,14 +16,17 @@ import type { Expense } from '@/types'
 export function useExpenses(tripId: string | undefined) {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!tripId) {
       setExpenses([])
       setLoading(false)
+      setError(null)
       return
     }
 
+    setError(null)
     const q = query(
       collection(db, 'trips', tripId, 'expenses'),
       orderBy('date', 'desc')
@@ -39,8 +43,8 @@ export function useExpenses(tripId: string | undefined) {
         setLoading(false)
       },
       (err) => {
+        setError(err as Error)
         setLoading(false)
-        console.error('useExpenses failed:', err)
       }
     )
 
@@ -52,6 +56,11 @@ export function useExpenses(tripId: string | undefined) {
     await addDoc(collection(db, 'trips', tripId, 'expenses'), expense)
   }
 
+  const updateExpense = async (expenseId: string, data: Partial<Omit<Expense, 'id'>>) => {
+    if (!tripId) return
+    await updateDoc(doc(db, 'trips', tripId, 'expenses', expenseId), data)
+  }
+
   const deleteExpense = async (expenseId: string) => {
     if (!tripId) return
     await deleteDoc(doc(db, 'trips', tripId, 'expenses', expenseId))
@@ -59,5 +68,5 @@ export function useExpenses(tripId: string | undefined) {
 
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0)
 
-  return { expenses, loading, addExpense, deleteExpense, totalSpent }
+  return { expenses, loading, error, addExpense, updateExpense, deleteExpense, totalSpent }
 }

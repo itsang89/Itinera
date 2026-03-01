@@ -1,28 +1,31 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useToast } from '@/context/ToastContext'
 import { useAuth } from '@/context/AuthContext'
 import { useTrips } from '@/hooks/useTrips'
 import { formatDateRange, daysUntil } from '@/lib/utils'
 import { TripCardSkeleton } from '@/components/LoadingSkeleton'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 export default function MyTripsPage() {
   const { user } = useAuth()
   const { trips, loading, error, deleteTrip } = useTrips(user?.uid)
+  const { showToast } = useToast()
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [tripToDelete, setTripToDelete] = useState<string | null>(null)
 
   const now = new Date().toISOString().split('T')[0]
   const upcoming = trips.filter((t) => t.endDate >= now)
   const past = trips.filter((t) => t.endDate < now)
   const displayed = tab === 'upcoming' ? upcoming : past
 
-  const handleDelete = async (e: React.MouseEvent, tripId: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!confirm('Delete this trip? This cannot be undone.')) return
+  const handleDelete = async (tripId: string) => {
     setDeletingId(tripId)
     try {
       await deleteTrip(tripId)
+      showToast('Trip deleted')
+      setTripToDelete(null)
     } finally {
       setDeletingId(null)
     }
@@ -61,7 +64,7 @@ export default function MyTripsPage() {
             <h1 className="text-2xl font-bold tracking-tight text-neutral-charcoal dark:text-neutral-100">
               My Trips
             </h1>
-            <p className="text-[11px] font-semibold text-neutral-gray dark:text-neutral-400 mt-0.5 uppercase tracking-[0.05em]">
+            <p className="text-[11px] font-semibold text-neutral-gray dark:text-neutral-400 mt-0.5">
               {upcoming.length} upcoming journey{upcoming.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -94,9 +97,28 @@ export default function MyTripsPage() {
         </div>
         <div className="px-6 space-y-3 mt-2">
           {displayed.length === 0 ? (
-            <div className="py-12 text-center text-neutral-gray dark:text-neutral-400 text-sm">
-              No {tab} trips. Create one to get started!
-            </div>
+            <Link
+              to="/trips/new"
+              className="flex flex-col items-center py-14 px-6 rounded-2xl border-2 border-dashed border-gray-200 dark:border-dark-border bg-soft-gray/30 dark:bg-dark-elevated/30 text-center group active:scale-[0.99] transition-transform"
+            >
+              <span className="material-symbols-outlined text-5xl text-neutral-300 dark:text-neutral-500 mb-4 group-hover:text-accent-blue-start dark:group-hover:text-sky-400 transition-colors">
+                flight_takeoff
+              </span>
+              <h3 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100 mb-1">
+                {tab === 'upcoming' ? 'No upcoming trips' : 'No past trips'}
+              </h3>
+              <p className="text-sm text-neutral-gray dark:text-neutral-400 mb-5 max-w-[240px]">
+                {tab === 'upcoming'
+                  ? 'Plan your next adventure. Create a trip to add destinations, build your itinerary, and track your budget.'
+                  : 'Trips you\'ve completed will appear here.'}
+              </p>
+              {tab === 'upcoming' && (
+                <span className="inline-flex items-center gap-2 py-3 px-5 gradient-accent text-sky-900 dark:text-sky-100 font-bold rounded-ios shadow-sm">
+                  <span className="material-symbols-outlined text-xl">add</span>
+                  Create your first trip
+                </span>
+              )}
+            </Link>
           ) : (
             displayed.map((trip) => {
               const daysLeft = daysUntil(trip.startDate)
@@ -104,15 +126,15 @@ export default function MyTripsPage() {
               return (
                 <div
                   key={trip.id}
-                  className="group relative p-5 pr-14 rounded-ios bg-white dark:bg-dark-surface border border-border-gray/60 dark:border-dark-border shadow-[0_2px_8px_rgba(0,0,0,0.02)] dark:shadow-none transition-all active:scale-[0.98] active:bg-soft-gray/50 dark:active:bg-dark-elevated"
+                  className="group relative p-5 pr-24 rounded-ios bg-white dark:bg-dark-surface border border-border-gray/60 dark:border-dark-border shadow-[0_2px_8px_rgba(0,0,0,0.02)] dark:shadow-none transition-all active:scale-[0.98] active:bg-soft-gray/50 dark:active:bg-dark-elevated"
                 >
                   <Link to={`/trips/${trip.id}`} className="block">
                     <div className="flex justify-between items-start gap-3 mb-1">
                       <h3 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100 leading-tight min-w-0 flex-1">
                         {trip.title}
                       </h3>
-                      {isUpcoming && daysLeft > 0 && daysLeft <= 30 && (
-                        <span className="flex-shrink-0 bg-sky-50 dark:bg-sky-500/60 text-sky-700 dark:text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">
+                      {isUpcoming && daysLeft > 0 && (
+                        <span className="flex-shrink-0 bg-sky-50 dark:bg-sky-500/60 text-sky-700 dark:text-white text-[10px] font-bold px-2 py-1 rounded-md">
                           {daysLeft} Day{daysLeft !== 1 ? 's' : ''} left
                         </span>
                       )}
@@ -133,14 +155,17 @@ export default function MyTripsPage() {
                     </p>
                   </Link>
                   <button
-                    onClick={(e) => handleDelete(e, trip.id)}
-                    disabled={deletingId === trip.id}
-                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-gray dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setTripToDelete(trip.id)
+                    }}
+                    disabled={!!deletingId}
+                    className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-gray dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-sm font-medium"
                     title="Delete trip"
                   >
-                    <span className="material-symbols-outlined text-[20px]">
-                      delete
-                    </span>
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    <span>Delete</span>
                   </button>
                 </div>
               )
@@ -150,10 +175,21 @@ export default function MyTripsPage() {
       </main>
       <Link
         to="/trips/new"
-        className="fixed bottom-36 right-6 size-14 gradient-accent text-sky-900 dark:text-sky-100 rounded-full shadow-lg shadow-sky-200/50 dark:shadow-sky-900/30 flex items-center justify-center active:scale-90 transition-all z-40"
+        className="fixed bottom-36 right-6 size-14 min-w-[44px] min-h-[44px] gradient-accent text-sky-900 dark:text-sky-100 rounded-full shadow-lg shadow-sky-300/50 dark:shadow-sky-900/30 flex items-center justify-center active:scale-90 transition-all z-40"
+        aria-label="Create new trip"
       >
         <span className="material-symbols-outlined text-3xl">add</span>
       </Link>
+
+      <ConfirmModal
+        open={!!tripToDelete}
+        title="Delete trip"
+        message="Are you sure you want to delete this trip? This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={async () => { if (tripToDelete) await handleDelete(tripToDelete) }}
+        onCancel={() => setTripToDelete(null)}
+      />
     </>
   )
 }

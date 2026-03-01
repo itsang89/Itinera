@@ -1,10 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { CURRENCY_SYMBOLS } from '@/lib/utils'
+import { CURRENCY_SYMBOLS, CURRENCIES, type CurrencyCode } from '@/lib/utils'
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'HKD', 'JPY'] as const
-export type CurrencyCode = (typeof CURRENCIES)[number]
+export type { CurrencyCode }
 
 export function useUserProfile(userId: string | undefined) {
   const [defaultCurrency, setDefaultCurrencyState] = useState<CurrencyCode>('USD')

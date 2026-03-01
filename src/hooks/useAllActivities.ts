@@ -66,7 +66,6 @@ export function useAllActivities(tripId: string | undefined) {
             (err) => {
               setError(err as Error)
               setLoading(false)
-              console.error('useAllActivities failed:', err)
             }
           )
           activityUnsubsRef.current.push(unsubActs)
@@ -76,7 +75,6 @@ export function useAllActivities(tripId: string | undefined) {
       (err) => {
         setError(err as Error)
         setLoading(false)
-        console.error('useAllActivities days failed:', err)
       }
     )
 

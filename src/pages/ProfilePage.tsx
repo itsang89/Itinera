@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { useUserProfile } from '@/hooks/useUserProfile'
 
 export default function ProfilePage() {
+  const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { resolvedTheme, setTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
   const {
     defaultCurrency,
     updateDefaultCurrency,
@@ -14,15 +16,32 @@ export default function ProfilePage() {
   } = useUserProfile(user?.uid)
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false)
   const [showComingSoon, setShowComingSoon] = useState(false)
+  const [showHelpModal, setShowHelpModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+  const [updatingCurrency, setUpdatingCurrency] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
   return (
     <>
       <header className="sticky top-0 z-30 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-xl px-6 py-5">
         <div className="flex items-center justify-between max-w-md mx-auto">
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-charcoal dark:text-neutral-100">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full active:bg-gray-100 dark:active:bg-dark-elevated transition-colors -ml-2"
+            aria-label="Back"
+          >
+            <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100 text-[22px]">
+              arrow_back_ios_new
+            </span>
+          </button>
+          <h1 className="text-xl font-bold tracking-tight text-neutral-charcoal dark:text-neutral-100 flex-1 text-center">
             Profile
           </h1>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full bg-soft-gray dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100">
+          <button
+            onClick={() => setShowComingSoon(true)}
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-soft-gray dark:bg-dark-elevated text-neutral-charcoal dark:text-neutral-100 -mr-2"
+            aria-label="Settings"
+          >
             <span className="material-symbols-outlined text-[22px]">settings</span>
           </button>
         </div>
@@ -51,8 +70,8 @@ export default function ProfilePage() {
         </section>
         <div className="space-y-8">
           <div>
-            <h3 className="text-xs font-bold text-neutral-gray dark:text-neutral-400 uppercase tracking-widest mb-4 px-1">
-              Account Settings
+            <h3 className="text-xs font-bold text-neutral-gray dark:text-neutral-400 mb-4 px-1">
+              Account settings
             </h3>
             <div className="bg-white dark:bg-dark-surface rounded-ios border border-gray-100 dark:border-dark-border overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
               <button
@@ -111,8 +130,8 @@ export default function ProfilePage() {
                 <div className="flex bg-soft-gray dark:bg-dark-elevated p-1 rounded-full">
                   <button
                     onClick={() => setTheme('light')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                      resolvedTheme === 'light'
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold transition-all ${
+                      (theme === 'light' || (theme === 'system' && resolvedTheme === 'light'))
                         ? 'bg-white dark:bg-dark-surface text-neutral-charcoal dark:text-neutral-100 shadow-sm'
                         : 'text-neutral-gray dark:text-neutral-400 hover:text-neutral-charcoal dark:hover:text-neutral-100'
                     }`}
@@ -122,8 +141,8 @@ export default function ProfilePage() {
                   </button>
                   <button
                     onClick={() => setTheme('dark')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                      resolvedTheme === 'dark'
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold transition-all ${
+                      (theme === 'dark' || (theme === 'system' && resolvedTheme === 'dark'))
                         ? 'bg-white dark:bg-dark-surface text-neutral-charcoal dark:text-neutral-100 shadow-sm'
                         : 'text-neutral-gray dark:text-neutral-400 hover:text-neutral-charcoal dark:hover:text-neutral-100'
                     }`}
@@ -136,11 +155,14 @@ export default function ProfilePage() {
             </div>
           </div>
           <div>
-            <h3 className="text-xs font-bold text-neutral-gray dark:text-neutral-400 uppercase tracking-widest mb-4 px-1">
+            <h3 className="text-xs font-bold text-neutral-gray dark:text-neutral-400 mb-4 px-1">
               Support
             </h3>
             <div className="bg-white dark:bg-dark-surface rounded-ios border border-gray-100 dark:border-dark-border overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.02)] dark:shadow-none">
-              <button className="w-full flex items-center justify-between p-4 hover:bg-soft-gray dark:hover:bg-dark-elevated transition-colors border-b border-gray-50 dark:border-dark-border">
+              <button
+                onClick={() => setShowHelpModal(true)}
+                className="w-full flex items-center justify-between p-4 hover:bg-soft-gray dark:hover:bg-dark-elevated transition-colors border-b border-gray-50 dark:border-dark-border"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-dark-elevated flex items-center justify-center text-neutral-gray dark:text-neutral-400">
                     <span className="material-symbols-outlined text-[20px]">
@@ -153,7 +175,10 @@ export default function ProfilePage() {
                   chevron_right
                 </span>
               </button>
-              <button className="w-full flex items-center justify-between p-4 hover:bg-soft-gray dark:hover:bg-dark-elevated transition-colors">
+              <button
+                onClick={() => setShowPrivacyModal(true)}
+                className="w-full flex items-center justify-between p-4 hover:bg-soft-gray dark:hover:bg-dark-elevated transition-colors"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-dark-elevated flex items-center justify-center text-neutral-gray dark:text-neutral-400">
                     <span className="material-symbols-outlined text-[20px]">
@@ -170,13 +195,30 @@ export default function ProfilePage() {
           </div>
           <div className="pt-4 flex justify-center">
             <button
-              onClick={signOut}
-              className="text-red-500 dark:text-red-400 font-semibold text-sm hover:text-red-600 dark:hover:text-red-300 transition-colors flex items-center gap-2 px-6 py-2"
+              onClick={async () => {
+                setSigningOut(true)
+                try {
+                  await signOut()
+                } finally {
+                  setSigningOut(false)
+                }
+              }}
+              disabled={signingOut}
+              className="text-red-500 dark:text-red-400 font-semibold text-sm hover:text-red-600 dark:hover:text-red-300 transition-colors flex items-center gap-2 px-6 py-2 disabled:opacity-60"
             >
-              <span className="material-symbols-outlined text-[20px]">
-                logout
-              </span>
-              Logout
+              {signingOut ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Signing out...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[20px]">
+                    logout
+                  </span>
+                  Logout
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -201,11 +243,17 @@ export default function ProfilePage() {
               {currencies.map((code) => (
                 <button
                   key={code}
-                  onClick={() => {
-                    updateDefaultCurrency(code)
-                    setShowCurrencyPicker(false)
+                  disabled={updatingCurrency}
+                  onClick={async () => {
+                    setUpdatingCurrency(true)
+                    try {
+                      await updateDefaultCurrency(code)
+                      setShowCurrencyPicker(false)
+                    } finally {
+                      setUpdatingCurrency(false)
+                    }
                   }}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors ${
+                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors disabled:opacity-60 ${
                     defaultCurrency === code
                       ? 'bg-soft-gray dark:bg-dark-elevated'
                       : 'hover:bg-soft-gray/50 dark:hover:bg-dark-elevated/50'
@@ -230,10 +278,14 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {showComingSoon && (
+      {(showComingSoon || showHelpModal || showPrivacyModal) && (
         <div
           className="fixed inset-0 z-50 bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center"
-          onClick={() => setShowComingSoon(false)}
+          onClick={() => {
+            setShowComingSoon(false)
+            setShowHelpModal(false)
+            setShowPrivacyModal(false)
+          }}
         >
           <div
             className="bg-white dark:bg-dark-surface w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-xl mx-4"
@@ -241,16 +293,24 @@ export default function ProfilePage() {
           >
             <div className="flex flex-col items-center text-center py-4">
               <span className="material-symbols-outlined text-5xl text-orange-400 dark:text-orange-400 mb-4">
-                notifications_active
+                {showHelpModal ? 'help' : showPrivacyModal ? 'verified_user' : 'notifications_active'}
               </span>
               <h3 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100 mb-2">
-                Coming Soon
+                {showHelpModal ? 'Help Center' : showPrivacyModal ? 'Privacy Policy' : 'Coming Soon'}
               </h3>
               <p className="text-sm text-neutral-gray dark:text-neutral-400 mb-6">
-                Push notifications for trip reminders and updates are on the way.
+                {showHelpModal
+                  ? 'Documentation and FAQs are being prepared. Check back soon!'
+                  : showPrivacyModal
+                    ? 'Our privacy policy is being updated. We take your data seriously.'
+                    : 'Push notifications for trip reminders and updates are on the way.'}
               </p>
               <button
-                onClick={() => setShowComingSoon(false)}
+                onClick={() => {
+                  setShowComingSoon(false)
+                  setShowHelpModal(false)
+                  setShowPrivacyModal(false)
+                }}
                 className="w-full py-3 rounded-ios font-semibold gradient-accent text-sky-900 dark:text-sky-100"
               >
                 Got it

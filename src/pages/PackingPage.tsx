@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { useToast } from '@/context/ToastContext'
 import { useTrip } from '@/hooks/useTrip'
 import { usePackingItems } from '@/hooks/usePackingItems'
-import { PageSkeleton, ListSkeleton } from '@/components/LoadingSkeleton'
+import { PageSkeleton, PackingItemSkeleton } from '@/components/LoadingSkeleton'
+import { daysUntil } from '@/lib/utils'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import type { PackingCategory } from '@/types'
 
 const PACKING_CATEGORIES: PackingCategory[] = [
@@ -22,6 +26,7 @@ export default function PackingPage() {
   const {
     items,
     loading: itemsLoading,
+    error: itemsError,
     addItem,
     togglePacked,
     deleteItem,
@@ -31,11 +36,16 @@ export default function PackingPage() {
   const [name, setName] = useState('')
   const [category, setCategory] = useState<PackingCategory>('Clothes')
   const [submitting, setSubmitting] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null)
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
+  const { showToast } = useToast()
 
-  const itemsByCategory = PACKING_CATEGORIES.map((cat) => ({
+  const unpackedByCategory = PACKING_CATEGORIES.map((cat) => ({
     category: cat,
-    items: items.filter((i) => i.category === cat),
+    items: items.filter((i) => i.category === cat && !i.packed),
   })).filter((g) => g.items.length > 0)
+
+  const packedItems = items.filter((i) => i.packed)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,6 +57,7 @@ export default function PackingPage() {
         category,
         packed: false,
       })
+      showToast('Item added!')
       setName('')
       setCategory('Clothes')
       setShowForm(false)
@@ -64,10 +75,11 @@ export default function PackingPage() {
       <header className="sticky top-0 z-30 bg-white dark:bg-dark-surface/80 dark:bg-dark-surface/80 backdrop-blur-xl px-6 py-5">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <Link
-              to={`/trips/${tripId}`}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-soft-gray dark:bg-dark-elevated"
-            >
+<Link
+            to={`/trips/${tripId}`}
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-soft-gray dark:bg-dark-elevated"
+            aria-label="Back to trip overview"
+          >
               <span className="material-symbols-outlined text-xl text-neutral-charcoal dark:text-neutral-100">
                 arrow_back_ios_new
               </span>
@@ -76,11 +88,25 @@ export default function PackingPage() {
               <h1 className="text-2xl font-bold tracking-tight text-neutral-charcoal dark:text-neutral-100">
                 Packing List
               </h1>
-              <p className="text-xs font-medium text-neutral-gray dark:text-neutral-400 mt-0.5 uppercase tracking-wider">
-                {trip.title}
+              <p className="text-xs font-medium text-neutral-gray dark:text-neutral-400 mt-0.5 truncate max-w-[180px]">
+                {trip.destination}
               </p>
+              {daysUntil(trip.startDate) > 0 && (
+                <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 mt-0.5">
+                  {daysUntil(trip.startDate)} day{daysUntil(trip.startDate) !== 1 ? 's' : ''} until departure
+                </p>
+              )}
             </div>
           </div>
+          <Link
+            to="/profile"
+            className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-soft-gray dark:bg-dark-elevated"
+            aria-label="Profile"
+          >
+            <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100">
+              account_circle
+            </span>
+          </Link>
         </div>
       </header>
       <main className="flex-1 max-w-md mx-auto w-full pb-32">
@@ -106,34 +132,97 @@ export default function PackingPage() {
           </div>
         </div>
         <div className="px-6 space-y-8">
-          {itemsLoading ? (
-            <div className="px-6">
-              <ListSkeleton count={5} />
+          {itemsError && (
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 text-sm">
+              Could not load packing list: {itemsError.message}
             </div>
-          ) : itemsByCategory.length === 0 ? (
-            <div className="py-12 text-center text-neutral-gray dark:text-neutral-400">
-              No items yet. Tap + to add one.
+          )}
+          {itemsLoading ? (
+            <div className="space-y-3">
+              <PackingItemSkeleton />
+              <PackingItemSkeleton />
+              <PackingItemSkeleton />
+              <PackingItemSkeleton />
+              <PackingItemSkeleton />
+            </div>
+          ) : items.length === 0 ? (
+            <div className="flex flex-col items-center py-14 px-6 rounded-2xl border-2 border-dashed border-gray-200 dark:border-dark-border bg-soft-gray/30 dark:bg-dark-elevated/30 text-center">
+              <span className="material-symbols-outlined text-5xl text-neutral-300 dark:text-neutral-500 mb-4">
+                inventory_2
+              </span>
+              <h3 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100 mb-1">
+                No items yet
+              </h3>
+              <p className="text-sm text-neutral-gray dark:text-neutral-400 mb-5 max-w-[260px]">
+                Build your packing list by category. Check items off as you pack.
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 py-3 px-5 gradient-accent text-sky-900 dark:text-sky-100 font-bold rounded-ios shadow-sm active:scale-[0.98] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">add</span>
+                Add your first item
+              </button>
             </div>
           ) : (
-            itemsByCategory.map(({ category: cat, items: catItems }) => {
-              const packed = catItems.filter((i) => i.packed).length
-              return (
+            <>
+            {unpackedByCategory.map(({ category: cat, items: catItems }) => (
                 <section key={cat}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100">
                       {cat}
                     </h2>
                     <span className="text-xs font-bold text-neutral-gray dark:text-neutral-400 bg-soft-gray dark:bg-dark-elevated px-2.5 py-1 rounded-md">
-                      {packed}/{catItems.length}
+                      {catItems.length}
                     </span>
                   </div>
                   <div className="space-y-3">
-                    {catItems.map((item) => (
-                      <div
+                    {catItems.map((item) => {
+                      const isToggling = togglingIds.has(item.id)
+                      return (
+                      <motion.div
                         key={item.id}
+                        layout
+                        layoutId={item.id}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         className="flex items-center justify-between gap-3 p-4 bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border rounded-2xl shadow-sm"
                       >
-                        <label className="flex-1 flex items-center cursor-pointer active:scale-[0.99] transition-transform min-w-0">
+                        <label className={`flex-1 flex items-center gap-3 min-w-0 ${isToggling ? 'cursor-wait opacity-70' : 'cursor-pointer active:scale-[0.99] transition-transform'}`}>
+                          <div className="relative flex items-center shrink-0">
+                            <input
+                              type="checkbox"
+                              checked={item.packed}
+                              disabled={isToggling}
+                              onChange={async () => {
+                                setTogglingIds((prev) => new Set(prev).add(item.id))
+                                try {
+                                  await togglePacked(item.id, !item.packed)
+                                } finally {
+                                  setTogglingIds((prev) => {
+                                    const next = new Set(prev)
+                                    next.delete(item.id)
+                                    return next
+                                  })
+                                }
+                              }}
+                              className="absolute opacity-0 w-6 h-6 cursor-pointer disabled:cursor-wait"
+                            />
+                            <div
+                              className={`w-6 h-6 border-2 rounded-lg transition-all flex items-center justify-center ${
+                                item.packed
+                                  ? 'gradient-accent border-transparent'
+                                  : 'border-gray-200 dark:border-dark-border'
+                              }`}
+                            >
+                              {isToggling ? (
+                                <span className="w-3 h-3 border-2 border-sky-800 border-t-transparent rounded-full animate-spin" />
+                              ) : item.packed ? (
+                                <span className="material-symbols-outlined text-sky-800 text-[16px]">
+                                  check
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
                           <span
                             className={`text-[15px] font-medium ${
                               item.packed
@@ -143,12 +232,61 @@ export default function PackingPage() {
                           >
                             {item.name}
                           </span>
-                          <div className="relative flex items-center ml-2 shrink-0">
+                        </label>
+                        <button
+                          onClick={() => setItemToDelete(item.id)}
+                          disabled={togglingIds.size > 0}
+                          className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-gray dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 disabled:opacity-60 text-sm font-medium"
+                          title="Remove item"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                          <span>Delete</span>
+                        </button>
+                      </motion.div>
+                    )})}
+                  </div>
+                </section>
+              ))}
+            {packedItems.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100">
+                    Packed
+                  </h2>
+                  <span className="text-xs font-bold text-neutral-gray dark:text-neutral-400 bg-soft-gray dark:bg-dark-elevated px-2.5 py-1 rounded-md">
+                    {packedItems.length}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {packedItems.map((item) => {
+                    const isToggling = togglingIds.has(item.id)
+                    return (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        layoutId={item.id}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        className="flex items-center justify-between gap-3 p-4 bg-white dark:bg-dark-surface border border-gray-100 dark:border-dark-border rounded-2xl shadow-sm"
+                      >
+                        <label className={`flex-1 flex items-center gap-3 min-w-0 ${isToggling ? 'cursor-wait opacity-70' : 'cursor-pointer active:scale-[0.99] transition-transform'}`}>
+                          <div className="relative flex items-center shrink-0">
                             <input
                               type="checkbox"
                               checked={item.packed}
-                              onChange={() => togglePacked(item.id, !item.packed)}
-                              className="absolute opacity-0 w-6 h-6 cursor-pointer"
+                              disabled={isToggling}
+                              onChange={async () => {
+                                setTogglingIds((prev) => new Set(prev).add(item.id))
+                                try {
+                                  await togglePacked(item.id, !item.packed)
+                                } finally {
+                                  setTogglingIds((prev) => {
+                                    const next = new Set(prev)
+                                    next.delete(item.id)
+                                    return next
+                                  })
+                                }
+                              }}
+                              className="absolute opacity-0 w-6 h-6 cursor-pointer disabled:cursor-wait"
                             />
                             <div
                               className={`w-6 h-6 border-2 rounded-lg transition-all flex items-center justify-center ${
@@ -157,35 +295,48 @@ export default function PackingPage() {
                                   : 'border-gray-200 dark:border-dark-border'
                               }`}
                             >
-                              {item.packed && (
+                              {isToggling ? (
+                                <span className="w-3 h-3 border-2 border-sky-800 border-t-transparent rounded-full animate-spin" />
+                              ) : item.packed ? (
                                 <span className="material-symbols-outlined text-sky-800 text-[16px]">
                                   check
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                           </div>
+                          <span
+                            className={`text-[15px] font-medium ${
+                              item.packed
+                                ? 'text-neutral-gray dark:text-neutral-400 line-through'
+                                : 'text-neutral-charcoal dark:text-neutral-100'
+                            }`}
+                          >
+                            {item.name}
+                          </span>
                         </label>
                         <button
-                          onClick={() => {
-                            if (confirm('Remove this item?')) deleteItem(item.id)
-                          }}
-                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-gray dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0"
+                          onClick={() => setItemToDelete(item.id)}
+                          disabled={togglingIds.size > 0}
+                          className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-gray dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0 disabled:opacity-60 text-sm font-medium"
                           title="Remove item"
                         >
                           <span className="material-symbols-outlined text-[18px]">delete</span>
+                          <span>Delete</span>
                         </button>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )
-            })
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+            </>
           )}
         </div>
       </main>
       <button
         onClick={() => setShowForm(true)}
-        className="fixed bottom-36 right-6 size-14 gradient-accent text-sky-900 rounded-full shadow-lg shadow-sky-200/50 flex items-center justify-center active:scale-90 transition-all z-40"
+        className="fixed bottom-36 right-6 size-14 min-w-[44px] min-h-[44px] gradient-accent text-sky-900 rounded-full shadow-lg shadow-sky-300/50 flex items-center justify-center active:scale-90 transition-all z-40"
+        aria-label="Add packing item"
       >
         <span className="material-symbols-outlined text-3xl">add</span>
       </button>
@@ -254,6 +405,21 @@ export default function PackingPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!itemToDelete}
+        title="Remove item"
+        message="Are you sure you want to remove this item from your packing list?"
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={async () => {
+          if (itemToDelete) {
+            await deleteItem(itemToDelete)
+            showToast('Item removed')
+          }
+        }}
+        onCancel={() => setItemToDelete(null)}
+      />
     </>
   )
 }

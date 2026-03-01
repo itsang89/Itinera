@@ -6,6 +6,17 @@ export const CURRENCY_SYMBOLS: Record<string, string> = {
   JPY: '¥',
 }
 
+export const CURRENCIES = ['USD', 'EUR', 'GBP', 'HKD', 'JPY'] as const
+export type CurrencyCode = (typeof CURRENCIES)[number]
+
+export const CURRENCY_OPTIONS: Array<{ code: CurrencyCode; symbol: string; label: string }> = [
+  { code: 'USD', symbol: '$', label: 'USD ($)' },
+  { code: 'EUR', symbol: '€', label: 'EUR (€)' },
+  { code: 'GBP', symbol: '£', label: 'GBP (£)' },
+  { code: 'HKD', symbol: 'HK$', label: 'HKD (HK$)' },
+  { code: 'JPY', symbol: '¥', label: 'JPY (¥)' },
+]
+
 export function formatDateRange(start: string, end: string) {
   const s = new Date(start)
   const e = new Date(end)

@@ -5,6 +5,7 @@ import { useTrip } from '@/hooks/useTrip'
 import { useAllActivities } from '@/hooks/useAllActivities'
 import { getCategoryIcon } from '@/hooks/useActivities'
 import { env } from '@/lib/env'
+import { daysUntil } from '@/lib/utils'
 import { PageSkeleton } from '@/components/LoadingSkeleton'
 import type { ActivityCategory } from '@/types'
 
@@ -82,7 +83,7 @@ export default function MapViewPage() {
         <div className="flex bg-white dark:bg-dark-surface/90 dark:bg-dark-surface/90 backdrop-blur-md p-1 rounded-full shadow-lg border border-gray-100 dark:border-dark-border">
           <button
             onClick={() => setView('list')}
-            className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
+            className={`px-5 py-2 text-xs font-bold rounded-full transition-colors ${
               view === 'list' ? 'text-sky-900 gradient-accent shadow-sm' : 'text-neutral-gray dark:text-neutral-400'
             }`}
           >
@@ -90,20 +91,54 @@ export default function MapViewPage() {
           </button>
           <button
             onClick={() => setView('map')}
-            className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-colors ${
+            className={`px-5 py-2 text-xs font-bold rounded-full transition-colors ${
               view === 'map' ? 'text-sky-900 gradient-accent shadow-sm' : 'text-neutral-gray dark:text-neutral-400'
             }`}
           >
             Map
           </button>
         </div>
+        <Link
+          to="/profile"
+          className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-dark-surface shadow-lg border border-gray-100 dark:border-dark-border active:scale-95 transition-all"
+          aria-label="Profile"
+        >
+          <span className="material-symbols-outlined text-neutral-charcoal dark:text-neutral-100">
+            account_circle
+          </span>
+        </Link>
       </header>
+      <div className="px-6 py-2 bg-white dark:bg-dark-surface/90 border-b border-gray-100 dark:border-dark-border">
+        <p className="text-sm font-medium text-neutral-charcoal dark:text-neutral-100 truncate text-center">
+          {trip.destination}
+        </p>
+        {daysUntil(trip.startDate) > 0 && (
+          <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 text-center mt-0.5">
+            {daysUntil(trip.startDate)} day{daysUntil(trip.startDate) !== 1 ? 's' : ''} until departure
+          </p>
+        )}
+      </div>
 
       {view === 'list' ? (
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {activities.length === 0 ? (
-            <div className="py-12 text-center text-neutral-gray dark:text-neutral-400">
-              No activities with locations yet.
+            <div className="flex flex-col items-center py-14 px-6 rounded-2xl border-2 border-dashed border-gray-200 dark:border-dark-border bg-soft-gray/30 dark:bg-dark-elevated/30 text-center">
+              <span className="material-symbols-outlined text-5xl text-neutral-300 dark:text-neutral-500 mb-4">
+                pin_drop
+              </span>
+              <h3 className="text-lg font-bold text-neutral-charcoal dark:text-neutral-100 mb-1">
+                No activities with locations yet
+              </h3>
+              <p className="text-sm text-neutral-gray dark:text-neutral-400 mb-5 max-w-[260px]">
+                Add locations to your itinerary activities to see them on the map.
+              </p>
+              <Link
+                to={`/trips/${tripId}/itinerary`}
+                className="inline-flex items-center gap-2 py-3 px-5 gradient-accent text-sky-900 dark:text-sky-100 font-bold rounded-ios shadow-sm active:scale-[0.98] transition-transform"
+              >
+                <span className="material-symbols-outlined text-xl">event_note</span>
+                Go to itinerary
+              </Link>
             </div>
           ) : (
             activities.map((a) => (

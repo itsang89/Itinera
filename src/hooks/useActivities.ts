@@ -27,14 +27,17 @@ export function getCategoryIcon(category: ActivityCategory) {
 export function useActivities(tripId: string | undefined, dayId: string | undefined) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!tripId || !dayId) {
       setActivities([])
       setLoading(false)
+      setError(null)
       return
     }
 
+    setError(null)
     const q = query(
       collection(db, 'trips', tripId, 'days', dayId, 'activities'),
       orderBy('order', 'asc')
@@ -52,8 +55,8 @@ export function useActivities(tripId: string | undefined, dayId: string | undefi
         setLoading(false)
       },
       (err) => {
+        setError(err as Error)
         setLoading(false)
-        console.error('useActivities failed:', err)
       }
     )
 
@@ -105,6 +108,7 @@ export function useActivities(tripId: string | undefined, dayId: string | undefi
   return {
     activities,
     loading,
+    error,
     addActivity,
     updateActivity,
     deleteActivity,

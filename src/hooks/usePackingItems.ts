@@ -14,14 +14,17 @@ import type { PackingItem } from '@/types'
 export function usePackingItems(tripId: string | undefined) {
   const [items, setItems] = useState<PackingItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     if (!tripId) {
       setItems([])
       setLoading(false)
+      setError(null)
       return
     }
 
+    setError(null)
     const unsubscribe: Unsubscribe = onSnapshot(
       collection(db, 'trips', tripId, 'packingItems'),
       (snapshot) => {
@@ -33,8 +36,8 @@ export function usePackingItems(tripId: string | undefined) {
         setLoading(false)
       },
       (err) => {
+        setError(err as Error)
         setLoading(false)
-        console.error('usePackingItems failed:', err)
       }
     )
 
@@ -61,5 +64,5 @@ export function usePackingItems(tripId: string | undefined) {
 
   const packedCount = items.filter((i) => i.packed).length
 
-  return { items, loading, addItem, togglePacked, deleteItem, packedCount }
+  return { items, loading, error, addItem, togglePacked, deleteItem, packedCount }
 }

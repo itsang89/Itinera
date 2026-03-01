@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import {
   doc,
   getDocFromServer,
+  getDoc,
   onSnapshot,
   updateDoc,
   collection,
@@ -73,9 +74,18 @@ export function useTrip(tripId: string | undefined) {
   const updateTrip = useCallback(
     async (updates: TripUpdates) => {
       if (!tripId) return
-      await updateDoc(doc(db, 'trips', tripId), updates)
-      if (updates.startDate != null && updates.endDate != null) {
-        await syncTripDays(tripId, updates.startDate, updates.endDate)
+      const tripRef = doc(db, 'trips', tripId)
+      await updateDoc(tripRef, updates)
+
+      const needsSync = updates.startDate != null || updates.endDate != null
+      if (needsSync) {
+        const snap = await getDoc(tripRef)
+        const data = snap.exists() ? snap.data() : null
+        const start = updates.startDate ?? data?.startDate
+        const end = updates.endDate ?? data?.endDate
+        if (start && end) {
+          await syncTripDays(tripId, start, end)
+        }
       }
     },
     [tripId]

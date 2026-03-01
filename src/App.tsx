@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import AppLayout from '@/components/layout/AppLayout'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { getLastTripId } from '@/lib/lastTrip'
 import LoginPage from '@/pages/LoginPage'
 import MyTripsPage from '@/pages/MyTripsPage'
 import CreateTripPage from '@/pages/CreateTripPage'
@@ -12,6 +13,14 @@ import MapViewPage from '@/pages/MapViewPage'
 import BudgetPage from '@/pages/BudgetPage'
 import PackingPage from '@/pages/PackingPage'
 import ProfilePage from '@/pages/ProfilePage'
+
+function HomeRedirect() {
+  const lastTripId = getLastTripId()
+  if (lastTripId) {
+    return <Navigate to={`/trips/${lastTripId}`} replace />
+  }
+  return <Navigate to="/trips" replace />
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -34,7 +43,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/trips" replace />} />
+      <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/trips"

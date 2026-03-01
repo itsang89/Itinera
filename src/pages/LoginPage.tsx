@@ -84,7 +84,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white dark:bg-dark-bg">
       <div className="w-full max-w-sm">
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-charcoal dark:text-neutral-100 mb-2 text-center">
+        <h1 className="font-serif text-hero font-normal tracking-tight text-neutral-charcoal dark:text-neutral-100 mb-2 text-center">
           Itinera
         </h1>
         <p className="text-neutral-gray dark:text-neutral-400 text-sm mb-8 text-center">
@@ -127,7 +127,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 gradient-accent text-sky-900 dark:text-sky-100 font-bold rounded-ios shadow-lg shadow-sky-200/50 dark:shadow-sky-900/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70"
+            className="w-full py-4 gradient-accent text-sky-900 dark:text-sky-100 font-bold rounded-ios shadow-lg shadow-sky-300/50 dark:shadow-sky-900/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70"
           >
             <span className="material-symbols-outlined">login</span>
             {submitting ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
